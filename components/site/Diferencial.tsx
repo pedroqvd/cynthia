@@ -30,25 +30,26 @@ export function Diferencial() {
     <section
       id="diferencial"
       style={{
-        padding: '8rem 4rem',
-        background: '#131210',
-        borderTop: '1px solid rgba(184,150,90,0.25)',
-        borderBottom: '1px solid rgba(184,150,90,0.25)',
+        padding: '8rem 5rem',
+        background: '#EDE7D9',
+        borderTop: '1px solid rgba(201,169,110,0.3)',
+        borderBottom: '1px solid rgba(201,169,110,0.3)',
       }}
-      className="max-md:!px-8 max-md:!py-20"
+      className="max-md:!px-6 max-md:!py-20"
     >
       <div className="section-eyebrow">Por que é diferente</div>
       <h2
         style={{
           fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 'clamp(2rem, 3.5vw, 3rem)',
-          fontWeight: 300,
+          fontWeight: 400,
           lineHeight: 1.15,
-          color: '#f5f0e8',
+          color: '#1C1C1C',
+          maxWidth: '480px',
         }}
       >
-        Três especialidades.<br />
-        Uma <em style={{ fontStyle: 'italic', color: '#b8965a' }}>única</em> profissional.
+        Três especialidades.{' '}
+        <em style={{ fontStyle: 'italic', color: '#1B6B5A' }}>Uma</em> profissional.
       </h2>
 
       <div
@@ -56,7 +57,7 @@ export function Diferencial() {
         className="reveal"
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 2px 1fr 2px 1fr',
+          gridTemplateColumns: '1fr 1px 1fr 1px 1fr',
           gap: 0,
           marginTop: '5rem',
         }}
@@ -75,7 +76,7 @@ export function Diferencial() {
                   fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: '4rem',
                   fontWeight: 300,
-                  color: 'rgba(184,150,90,0.25)',
+                  color: 'rgba(201,169,110,0.4)',
                   lineHeight: 1,
                   marginBottom: '2rem',
                 }}
@@ -85,16 +86,16 @@ export function Diferencial() {
               <div
                 style={{
                   fontFamily: 'Cormorant Garamond, Georgia, serif',
-                  fontSize: '1.4rem',
+                  fontSize: '1.35rem',
                   fontWeight: 400,
-                  color: '#f5f0e8',
+                  color: '#1C1C1C',
                   marginBottom: '1rem',
                   lineHeight: 1.2,
                 }}
               >
                 {item.title}
               </div>
-              <p style={{ fontSize: '.85rem', color: '#7a7570', lineHeight: 1.8 }}>
+              <p style={{ fontSize: '.85rem', color: '#6B6B6B', lineHeight: 1.8 }}>
                 {item.body}
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginTop: '1.5rem' }}>
@@ -102,13 +103,13 @@ export function Diferencial() {
                   <span
                     key={t}
                     style={{
-                      fontSize: '.68rem',
+                      fontSize: '.66rem',
                       letterSpacing: '.1em',
                       textTransform: 'uppercase',
-                      color: '#b8965a',
-                      border: '1px solid rgba(184,150,90,0.25)',
+                      color: '#1B6B5A',
+                      border: '1px solid rgba(27,107,90,0.25)',
                       padding: '.3rem .8rem',
-                      borderRadius: '1px',
+                      borderRadius: '2px',
                     }}
                   >
                     {t}
@@ -119,7 +120,7 @@ export function Diferencial() {
             {i < 2 && (
               <div
                 key={`div-${i}`}
-                style={{ background: 'rgba(184,150,90,0.25)', alignSelf: 'stretch' }}
+                style={{ background: 'rgba(201,169,110,0.3)', alignSelf: 'stretch' }}
                 className="max-md:hidden"
               />
             )}

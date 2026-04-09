@@ -2,29 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 20 14% 4%;
-    --card: 0 0% 100%;
-    --card-foreground: 20 14% 4%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 14% 4%;
-    --primary: 36 36% 52%;
-    --primary-foreground: 20 14% 4%;
-    --secondary: 36 20% 96%;
-    --secondary-foreground: 20 14% 4%;
-    --muted: 36 10% 94%;
-    --muted-foreground: 25 5% 45%;
-    --accent: 36 20% 96%;
-    --accent-foreground: 20 14% 4%;
+    --background: 40 30% 93%;
+    --foreground: 0 0% 11%;
+    --card: 40 30% 93%;
+    --card-foreground: 0 0% 11%;
+    --popover: 40 30% 93%;
+    --popover-foreground: 0 0% 11%;
+    --primary: 163 60% 26%;
+    --primary-foreground: 40 30% 93%;
+    --secondary: 40 20% 88%;
+    --secondary-foreground: 0 0% 11%;
+    --muted: 40 20% 86%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 38 45% 61%;
+    --accent-foreground: 0 0% 11%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 36 20% 88%;
-    --input: 36 20% 88%;
-    --ring: 36 36% 52%;
+    --border: 40 20% 82%;
+    --input: 40 20% 82%;
+    --ring: 163 60% 26%;
     --radius: 0.25rem;
   }
 
@@ -42,11 +42,11 @@
     @apply font-sans;
   }
 
-  /* Site público — tema escuro */
+  /* Site público — tema creme */
   .site-body {
-    background: #0f0e0c;
-    color: #f5f0e8;
-    font-family: 'DM Sans', sans-serif;
+    background: #F5F0E6;
+    color: #1C1C1C;
+    font-family: 'Jost', sans-serif;
     font-weight: 300;
     line-height: 1.7;
     overflow-x: hidden;
@@ -57,26 +57,15 @@
     width: 4px;
   }
   ::-webkit-scrollbar-track {
-    background: #0f0e0c;
+    background: #F5F0E6;
   }
   ::-webkit-scrollbar-thumb {
-    background: #b8965a;
+    background: #C9A96E;
     border-radius: 2px;
   }
 }
 
 @layer components {
-  /* Noise overlay para textura */
-  .noise-overlay::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0.5;
-  }
-
   /* Scroll reveal */
   .reveal {
     opacity: 0;
@@ -93,9 +82,9 @@
   .section-eyebrow {
     font-size: 0.7rem;
     font-weight: 400;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #b8965a;
+    color: #1B6B5A;
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
@@ -104,9 +93,9 @@
 
   .section-eyebrow::before {
     content: '';
-    width: 24px;
+    width: 32px;
     height: 1px;
-    background: #b8965a;
+    background: #C9A96E;
     flex-shrink: 0;
   }
 
@@ -123,7 +112,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: #b8965a;
+    background: #1B6B5A;
     cursor: ew-resize;
     z-index: 10;
   }
@@ -137,7 +126,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #b8965a;
-    border: 2px solid #0f0e0c;
+    background: #1B6B5A;
+    border: 2px solid #F5F0E6;
   }
 }

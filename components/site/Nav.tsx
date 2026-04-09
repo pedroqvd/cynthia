@@ -29,39 +29,57 @@ export function Nav() {
           left: 0,
           right: 0,
           zIndex: 100,
-          padding: '1.5rem 4rem',
+          padding: '1.25rem 4rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          background: scrolled
-            ? 'rgba(15,14,12,0.97)'
-            : 'linear-gradient(to bottom, rgba(15,14,12,.95) 0%, transparent 100%)',
-          borderBottom: scrolled ? '1px solid rgba(184,150,90,0.15)' : 'none',
+          background: scrolled ? 'rgba(245,240,230,0.97)' : 'rgba(245,240,230,0.92)',
+          borderBottom: scrolled ? '1px solid rgba(201,169,110,0.3)' : '1px solid transparent',
+          backdropFilter: 'blur(12px)',
           transition: 'background .3s, border-color .3s',
         }}
+        className="max-md:!px-6"
       >
         {/* Logo */}
         <Link
           href="#"
           style={{
             fontFamily: 'Cormorant Garamond, Georgia, serif',
-            fontSize: '1.15rem',
+            fontSize: '1.1rem',
             fontWeight: 400,
-            color: '#f5f0e8',
-            letterSpacing: '.04em',
+            color: '#1C1C1C',
+            letterSpacing: '.06em',
             textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '.5rem',
           }}
         >
-          Dra. <span style={{ color: '#b8965a' }}>Cynthia</span>
+          <span
+            style={{
+              width: '32px',
+              height: '32px',
+              background: '#1B6B5A',
+              color: '#F5F0E6',
+              borderRadius: '2px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
+              fontSize: '.9rem',
+              fontWeight: 500,
+              letterSpacing: '-.01em',
+              flexShrink: 0,
+            }}
+          >
+            CQ
+          </span>
+          Dra. Cynthia <span style={{ color: '#1B6B5A' }}>Quevedo</span>
         </Link>
 
         {/* Links desktop */}
         <ul
-          style={{
-            display: 'flex',
-            gap: '2.5rem',
-            listStyle: 'none',
-          }}
+          style={{ display: 'flex', gap: '2.5rem', listStyle: 'none', alignItems: 'center' }}
           className="hidden md:flex"
         >
           {LINKS.map((l) => (
@@ -71,14 +89,14 @@ export function Nav() {
                 style={{
                   fontSize: '.78rem',
                   fontWeight: 400,
-                  letterSpacing: '.12em',
+                  letterSpacing: '.1em',
                   textTransform: 'uppercase',
-                  color: '#7a7570',
+                  color: '#6B6B6B',
                   textDecoration: 'none',
                   transition: 'color .2s',
                 }}
-                onMouseEnter={(e) => ((e.target as HTMLElement).style.color = '#f5f0e8')}
-                onMouseLeave={(e) => ((e.target as HTMLElement).style.color = '#7a7570')}
+                onMouseEnter={(e) => ((e.target as HTMLElement).style.color = '#1B6B5A')}
+                onMouseLeave={(e) => ((e.target as HTMLElement).style.color = '#6B6B6B')}
               >
                 {l.label}
               </a>
@@ -90,17 +108,17 @@ export function Nav() {
               style={{
                 fontSize: '.75rem',
                 fontWeight: 500,
-                letterSpacing: '.1em',
+                letterSpacing: '.08em',
                 textTransform: 'uppercase',
-                color: '#0f0e0c',
-                background: '#b8965a',
-                padding: '.6rem 1.4rem',
-                borderRadius: '2px',
+                color: '#F5F0E6',
+                background: '#1B6B5A',
+                padding: '.65rem 1.5rem',
+                borderRadius: '3px',
                 textDecoration: 'none',
                 transition: 'background .2s',
               }}
-              onMouseEnter={(e) => ((e.target as HTMLElement).style.background = '#d4b07a')}
-              onMouseLeave={(e) => ((e.target as HTMLElement).style.background = '#b8965a')}
+              onMouseEnter={(e) => ((e.target as HTMLElement).style.background = '#163D32')}
+              onMouseLeave={(e) => ((e.target as HTMLElement).style.background = '#1B6B5A')}
             >
               Agendar avaliação
             </a>
@@ -111,22 +129,14 @@ export function Nav() {
         <button
           className="flex md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '8px',
-            color: '#f5f0e8',
-          }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: '#1C1C1C' }}
           aria-label="Menu"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             {mobileOpen ? (
               <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             ) : (
-              <>
-                <path d="M4 8h16M4 12h16M4 16h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </>
+              <path d="M4 8h16M4 12h16M4 16h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             )}
           </svg>
         </button>
@@ -138,7 +148,7 @@ export function Nav() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(15,14,12,0.98)',
+            background: '#F5F0E6',
             zIndex: 99,
             display: 'flex',
             flexDirection: 'column',
@@ -156,7 +166,7 @@ export function Nav() {
                 fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: '2rem',
                 fontWeight: 300,
-                color: '#f5f0e8',
+                color: '#1C1C1C',
                 textDecoration: 'none',
                 letterSpacing: '.04em',
               }}
@@ -169,12 +179,12 @@ export function Nav() {
             style={{
               fontSize: '.85rem',
               fontWeight: 500,
-              letterSpacing: '.1em',
+              letterSpacing: '.08em',
               textTransform: 'uppercase',
-              color: '#0f0e0c',
-              background: '#b8965a',
+              color: '#F5F0E6',
+              background: '#1B6B5A',
               padding: '.9rem 2.5rem',
-              borderRadius: '2px',
+              borderRadius: '3px',
               textDecoration: 'none',
               marginTop: '1rem',
             }}

@@ -8,12 +8,17 @@ export const metadata: Metadata = {
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="site-body noise-overlay">
+    <div className="site-body">
       {children}
       <Toaster
-        theme="dark"
+        theme="light"
         toastOptions={{
-          style: { background: '#1a1916', border: '1px solid rgba(184,150,90,0.25)', color: '#f5f0e8' },
+          style: {
+            background: '#F5F0E6',
+            border: '1px solid rgba(201,169,110,0.3)',
+            color: '#1C1C1C',
+            fontFamily: 'Jost, sans-serif',
+          },
         }}
       />
       {process.env.NEXT_PUBLIC_GA_ID && (

@@ -36,20 +36,20 @@ export function Depoimentos({ items = DEFAULT_TESTIMONIALS }: { items?: Testimon
   return (
     <section
       id="depoimentos"
-      style={{ padding: '8rem 4rem', background: '#131210' }}
-      className="max-md:!px-8 max-md:!py-20"
+      style={{ padding: '8rem 5rem', background: '#F5F0E6' }}
+      className="max-md:!px-6 max-md:!py-20"
     >
       <div className="section-eyebrow">Depoimentos</div>
       <h2
         style={{
           fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 'clamp(2rem, 3.5vw, 3rem)',
-          fontWeight: 300,
+          fontWeight: 400,
           lineHeight: 1.15,
-          color: '#f5f0e8',
+          color: '#1C1C1C',
         }}
       >
-        O que os <em style={{ fontStyle: 'italic', color: '#b8965a' }}>pacientes</em> dizem
+        O que os <em style={{ fontStyle: 'italic', color: '#7B1D3A' }}>pacientes</em> dizem
       </h2>
 
       <div
@@ -76,20 +76,35 @@ function DepCard({ nome, cargo, texto, nota }: Testimonial) {
   return (
     <div
       style={{
-        border: '1px solid rgba(184,150,90,0.25)',
+        background: '#EDE7D9',
+        border: '0.5px solid #EAE3D2',
+        borderRadius: '10px',
         padding: '2.5rem',
         position: 'relative',
       }}
     >
-      {/* Estrelas */}
+      {/* Borda esquerda bordeaux */}
       <div
         style={{
           position: 'absolute',
           top: '2rem',
+          bottom: '2rem',
+          left: 0,
+          width: '3px',
+          background: '#7B1D3A',
+          borderRadius: '0 2px 2px 0',
+        }}
+      />
+
+      {/* Estrelas */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '1.75rem',
           right: '2rem',
-          color: '#b8965a',
+          color: '#C9A96E',
           fontSize: '.75rem',
-          letterSpacing: '.1em',
+          letterSpacing: '.05em',
         }}
       >
         {'★'.repeat(nota)}
@@ -102,8 +117,8 @@ function DepCard({ nome, cargo, texto, nota }: Testimonial) {
           fontSize: '1.05rem',
           fontWeight: 300,
           fontStyle: 'italic',
-          color: '#f5f0e8',
-          lineHeight: 1.7,
+          color: '#1C1C1C',
+          lineHeight: 1.75,
           marginBottom: '2rem',
         }}
       >
@@ -112,15 +127,19 @@ function DepCard({ nome, cargo, texto, nota }: Testimonial) {
             fontSize: '3rem',
             lineHeight: 0,
             verticalAlign: '-.6em',
-            color: '#b8965a',
-            marginRight: '.25rem',
+            color: '#7B1D3A',
+            marginRight: '.15rem',
             fontFamily: 'Cormorant Garamond, Georgia, serif',
+            opacity: .6,
           }}
         >
           "
         </span>
         {texto}
       </p>
+
+      {/* Separador */}
+      <div style={{ width: '32px', height: '1px', background: '#C9A96E', marginBottom: '1.25rem' }} />
 
       {/* Autor */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -129,21 +148,21 @@ function DepCard({ nome, cargo, texto, nota }: Testimonial) {
             width: '36px',
             height: '36px',
             borderRadius: '50%',
-            background: 'rgba(184,150,90,0.25)',
+            background: 'rgba(27,107,90,0.15)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: '1rem',
-            color: '#b8965a',
+            color: '#1B6B5A',
             flexShrink: 0,
           }}
         >
           {initial}
         </div>
         <div>
-          <div style={{ fontSize: '.82rem', color: '#f5f0e8', fontWeight: 400 }}>{nome}</div>
-          <div style={{ fontSize: '.72rem', color: '#7a7570', marginTop: '1px' }}>{cargo}</div>
+          <div style={{ fontSize: '.82rem', color: '#1C1C1C', fontWeight: 400 }}>{nome}</div>
+          <div style={{ fontSize: '.7rem', color: '#6B6B6B', marginTop: '1px' }}>{cargo}</div>
         </div>
       </div>
     </div>
