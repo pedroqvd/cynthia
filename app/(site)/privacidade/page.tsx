@@ -18,7 +18,7 @@ export default function PrivacidadePage() {
             fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 'clamp(2rem, 4vw, 3rem)',
             fontWeight: 300,
-            color: '#f5f0e8',
+            color: '#1C1C1C',
             marginBottom: '3rem',
           }}
         >
@@ -61,17 +61,17 @@ export default function PrivacidadePage() {
                 fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: '1.3rem',
                 fontWeight: 400,
-                color: '#f5f0e8',
+                color: '#1C1C1C',
                 marginBottom: '.75rem',
               }}
             >
               {s.title}
             </h2>
-            <p style={{ fontSize: '.9rem', color: '#7a7570', lineHeight: 1.8 }}>{s.body}</p>
+            <p style={{ fontSize: '.9rem', color: '#6B6B6B', lineHeight: 1.8 }}>{s.body}</p>
           </div>
         ))}
 
-        <p style={{ fontSize: '.75rem', color: '#7a7570', marginTop: '4rem' }}>
+        <p style={{ fontSize: '.75rem', color: '#9B9B9B', marginTop: '4rem' }}>
           Última atualização: {new Date().toLocaleDateString('pt-BR')}
         </p>
       </main>

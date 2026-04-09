@@ -104,7 +104,7 @@ export function Nav() {
           ))}
           <li>
             <a
-              href="#cta"
+              href="/agendamento"
               style={{
                 fontSize: '.75rem',
                 fontWeight: 500,
@@ -175,7 +175,7 @@ export function Nav() {
             </a>
           ))}
           <a
-            href="#cta"
+            href="/agendamento"
             style={{
               fontSize: '.85rem',
               fontWeight: 500,
