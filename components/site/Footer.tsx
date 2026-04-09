@@ -20,6 +20,13 @@ export function Footer() {
         <Link href="/privacidade" style={{ color: '#1B6B5A', textDecoration: 'none' }}>
           Privacidade
         </Link>
+        {' · '}
+        <Link
+          href="/admin/dashboard"
+          style={{ color: 'rgba(107,107,107,0.4)', textDecoration: 'none', fontSize: '.68rem' }}
+        >
+          Área restrita
+        </Link>
       </div>
 
       {/* Monograma central */}

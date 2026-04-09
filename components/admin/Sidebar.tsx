@@ -59,6 +59,15 @@ const LINKS = [
     ),
   },
   {
+    href: '/admin/automacoes',
+    label: 'Automações',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M9 1.5L3 9h5.25L7.5 16.5l6-7.5H8.25L9 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
     href: '/admin/config',
     label: 'Configurações',
     icon: (
@@ -116,7 +125,7 @@ export function AdminSidebar() {
               whiteSpace: 'nowrap',
             }}
           >
-            Dra. <span style={{ color: '#b8965a' }}>Cynthia</span>
+            Dra. <span style={{ color: '#b8965a' }}>Cynthia Quevedo</span>
           </span>
         )}
         <button
