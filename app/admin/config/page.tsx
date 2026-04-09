@@ -9,7 +9,7 @@ async function getConfig() {
   const supabase = createClient()
   const { data } = await supabase.from('site_config').select('key, value')
   const config: Record<string, string> = {}
-  ;(data ?? []).forEach((row) => { config[row.key] = row.value })
+  ;((data ?? []) as { key: string; value: string }[]).forEach((row) => { config[row.key] = row.value })
   return config
 }
 

@@ -2,7 +2,7 @@
  * Vercel Cron: a cada 15 minutos
  * Fallback de sincronização Google Calendar → Supabase
  */
-import { syncCalendarToSupabase } from '@/app/api/webhooks/calendar/route'
+import { syncCalendarToSupabase } from '@/lib/sync-calendar'
 import { apiResponse, apiError } from '@/lib/utils'
 
 export const maxDuration = 30

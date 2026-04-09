@@ -5,6 +5,16 @@ import { AgendaCalendar } from '@/components/admin/AgendaCalendar'
 export const metadata: Metadata = { title: 'Agenda' }
 export const dynamic = 'force-dynamic'
 
+type ApptRow = {
+  id: string
+  procedimento: string
+  data_hora: string
+  duracao_min: number
+  status: string
+  lead_id: string | null
+  leads: { nome: string; whatsapp: string } | { nome: string; whatsapp: string }[] | null
+}
+
 async function getEvents() {
   const supabase = createClient()
   const { data } = await supabase
@@ -14,7 +24,7 @@ async function getEvents() {
     .order('data_hora')
     .limit(200)
 
-  return (data ?? []).map((appt) => {
+  return ((data ?? []) as ApptRow[]).map((appt) => {
     const lead = Array.isArray(appt.leads) ? appt.leads[0] : appt.leads
     return {
       id: appt.id,

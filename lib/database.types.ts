@@ -45,6 +45,7 @@ export interface Database {
           status?: 'novo' | 'em_contato' | 'agendado' | 'proposta' | 'fechado'
           ticket_estimado?: number | null
           observacoes?: string | null
+          created_at?: string
           updated_at?: string
           last_seen?: string | null
         }
@@ -82,6 +83,7 @@ export interface Database {
           template_name?: string | null
           whatsapp_message_id?: string | null
           status?: 'sent' | 'delivered' | 'read' | 'failed' | 'received' | null
+          created_at?: string
         }
         Relationships: [
           {
@@ -124,6 +126,7 @@ export interface Database {
           duracao_min?: number
           status?: 'agendado' | 'confirmado' | 'realizado' | 'cancelado'
           notas?: string | null
+          created_at?: string
         }
         Relationships: [
           {
@@ -163,6 +166,7 @@ export interface Database {
           foto_depois_url?: string
           ativo?: boolean
           ordem?: number
+          created_at?: string
         }
         Relationships: []
       }
@@ -222,6 +226,7 @@ export interface Database {
           user_id?: string | null
           acao?: string
           detalhes?: Json | null
+          created_at?: string
         }
         Relationships: [
           {
@@ -265,12 +270,3 @@ export interface Database {
     }
   }
 }
-
-// Convenience types
-export type Lead = Database['public']['Tables']['leads']['Row']
-export type Message = Database['public']['Tables']['messages']['Row']
-export type Appointment = Database['public']['Tables']['appointments']['Row']
-export type BeforeAfter = Database['public']['Tables']['before_after']['Row']
-export type Testimonial = Database['public']['Tables']['testimonials']['Row']
-export type ActivityLog = Database['public']['Tables']['activity_log']['Row']
-export type SiteConfig = Database['public']['Tables']['site_config']['Row']

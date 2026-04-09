@@ -1,6 +1,5 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'noreply@dracynthia.com.br'
 
 /** E-mail de confirmação de agendamento para o paciente */
@@ -11,6 +10,7 @@ export async function sendConfirmationEmail(params: {
   dataHora: string
   endereco: string
 }) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   return resend.emails.send({
     from: `Dra. Cynthia <${FROM}>`,
     to: params.to,
@@ -46,6 +46,7 @@ export async function sendNewLeadEmail(params: {
   especialidade: string
   origem: string
 }) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const adminEmail = process.env.RESEND_FROM_EMAIL!
   return resend.emails.send({
     from: `Sistema Cynthia <${FROM}>`,

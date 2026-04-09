@@ -6,6 +6,8 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { sendTemplateMessage, TEMPLATES, sendTextMessage } from '@/lib/whatsapp'
 import { apiResponse, apiError } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 export const maxDuration = 60
 
 export async function GET() {

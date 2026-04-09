@@ -28,7 +28,8 @@ async function getMetrics() {
     supabase.from('appointments').select('id, procedimento, data_hora, leads(nome, whatsapp)').gte('data_hora', hoje.toISOString()).not('status', 'eq', 'cancelado').order('data_hora').limit(5),
     supabase.from('messages').select('id, content, direction, created_at, lead_id, leads(nome)').eq('direction', 'in').order('created_at', { ascending: false }).limit(5),
     supabase.from('leads').select('id, nome, status, created_at, especialidade').order('created_at', { ascending: false }).limit(30),
-    supabase.rpc('leads_por_dia', { dias: 30 }).select('*'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase.rpc as any)('leads_por_dia', { dias: 30 }).select('*'),
   ])
 
   return {
