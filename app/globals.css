@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 4%;
+    --primary: 36 36% 52%;
+    --primary-foreground: 20 14% 4%;
+    --secondary: 36 20% 96%;
+    --secondary-foreground: 20 14% 4%;
+    --muted: 36 10% 94%;
+    --muted-foreground: 25 5% 45%;
+    --accent: 36 20% 96%;
+    --accent-foreground: 20 14% 4%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 36 20% 88%;
+    --input: 36 20% 88%;
+    --ring: 36 36% 52%;
+    --radius: 0.25rem;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans;
+  }
+
+  /* Site público — tema escuro */
+  .site-body {
+    background: #0f0e0c;
+    color: #f5f0e8;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar customizada */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f0e0c;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #b8965a;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  /* Noise overlay para textura */
+  .noise-overlay::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.5;
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Section eyebrow */
+  .section-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #b8965a;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .section-eyebrow::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: #b8965a;
+    flex-shrink: 0;
+  }
+
+  /* Before/After slider */
+  .ba-slider {
+    position: relative;
+    overflow: hidden;
+    cursor: ew-resize;
+    user-select: none;
+  }
+
+  .ba-slider-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #b8965a;
+    cursor: ew-resize;
+    z-index: 10;
+  }
+
+  .ba-slider-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #b8965a;
+    border: 2px solid #0f0e0c;
+  }
+}
