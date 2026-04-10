@@ -50,7 +50,7 @@ function LoginForm() {
     setForgotLoading(true)
 
     try {
-      const redirectTo = `${window.location.origin}/auth/callback?next=/admin/reset-password`
+      const redirectTo = `${window.location.origin}/auth/callback`
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

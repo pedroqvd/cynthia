@@ -14,7 +14,6 @@ import { createClient } from '@/lib/supabase/client'
 function CallbackHandler() {
   const router = useRouter()
   const params = useSearchParams()
-  const next = params.get('next') ?? '/admin/dashboard'
 
   useEffect(() => {
     const supabase = createClient()
@@ -22,6 +21,10 @@ function CallbackHandler() {
 
     if (hash.includes('access_token')) {
       // Fluxo implícito legado — o cliente Supabase processa o hash automaticamente
+      // Detecta type=recovery no hash para redirecionar para reset de senha
+      const isRecovery = hash.includes('type=recovery')
+      const next = params.get('next') ?? (isRecovery ? '/admin/reset-password' : '/admin/dashboard')
+
       supabase.auth.getSession().then(({ data }) => {
         if (data.session) {
           router.replace(next)
@@ -33,6 +36,7 @@ function CallbackHandler() {
     }
 
     const code = params.get('code')
+    const next = params.get('next') ?? '/admin/dashboard'
     if (code) {
       // Fluxo PKCE — troca o código por sessão
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
