@@ -49,7 +49,7 @@ export function Nav() {
             textDecoration: 'none',
           }}
         >
-          <img src="/logo-cq.png" alt="Dra. Cynthia Quevedo" style={{ height: '40px', width: 'auto' }} />
+          <img src="/images/logo-cq.png" alt="Dra. Cynthia Quevedo" style={{ height: '40px', width: 'auto' }} />
         </Link>
 
         {/* Links desktop */}

@@ -31,7 +31,7 @@ export function Footer() {
 
       {/* Monograma central */}
       <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <img src="/logo-cq.png" alt="Dra. Cynthia Quevedo" style={{ height: '70px', width: 'auto', marginBottom: '.5rem' }} />
+        <img src="/images/logo-cq.png" alt="Dra. Cynthia Quevedo" style={{ height: '70px', width: 'auto', marginBottom: '.5rem' }} />
         <div
           style={{
             fontSize: '.62rem',

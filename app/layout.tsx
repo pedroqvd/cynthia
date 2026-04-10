@@ -46,14 +46,9 @@ export const metadata: Metadata = {
       'Especialista em Estética Dental, Cirurgia Bucomaxilofacial e Prótese em Brasília-DF.',
     images: ['/og-image.jpg'],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true },
-  },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.png',
+    icon: '/images/favicon.ico.png',
+    shortcut: '/images/favicon.ico.png',
   },
 }
 
