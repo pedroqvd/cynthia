@@ -16,12 +16,19 @@ export async function middleware(request: NextRequest) {
 
   // Rotas admin: requer autenticação
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
-    let response = NextResponse.next({ request })
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
+    // Se variáveis não configuradas, redireciona para login
+    if (!supabaseUrl || !supabaseKey) {
+      const loginUrl = new URL('/admin/login', request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    try {
+      let response = NextResponse.next({ request })
+
+      const supabase = createServerClient(supabaseUrl, supabaseKey, {
         cookies: {
           getAll() {
             return request.cookies.getAll()
@@ -34,18 +41,22 @@ export async function middleware(request: NextRequest) {
             )
           },
         },
+      })
+
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        const loginUrl = new URL('/admin/login', request.url)
+        loginUrl.searchParams.set('redirect', pathname)
+        return NextResponse.redirect(loginUrl)
       }
-    )
 
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
+      return response
+    } catch {
+      // Em caso de erro inesperado, redireciona para login
       const loginUrl = new URL('/admin/login', request.url)
-      loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
     }
-
-    return response
   }
 
   return NextResponse.next()
