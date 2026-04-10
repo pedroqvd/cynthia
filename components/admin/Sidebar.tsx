@@ -59,6 +59,15 @@ const LINKS = [
     ),
   },
   {
+    href: '/admin/blog',
+    label: 'Artigos / Notícias',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M4 3h10a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1zM7 6h4M7 9h4M7 12h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
     href: '/admin/automacoes',
     label: 'Automações',
     icon: (

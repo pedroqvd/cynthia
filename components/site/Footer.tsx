@@ -21,6 +21,10 @@ export function Footer() {
           Privacidade
         </Link>
         {' · '}
+        <Link href="/blog" style={{ color: '#1B6B5A', textDecoration: 'none' }}>
+          Artigos
+        </Link>
+        {' · '}
         <Link
           href="/admin/dashboard"
           style={{ color: 'rgba(107,107,107,0.4)', textDecoration: 'none', fontSize: '.68rem' }}

@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 const LINKS = [
-  { href: '#sobre', label: 'Sobre' },
-  { href: '#especialidades', label: 'Especialidades' },
-  { href: '#resultados', label: 'Resultados' },
-  { href: '#depoimentos', label: 'Depoimentos' },
+  { href: '/#sobre', label: 'Sobre' },
+  { href: '/#especialidades', label: 'Especialidades' },
+  { href: '/#resultados', label: 'Resultados' },
+  { href: '/#depoimentos', label: 'Depoimentos' },
+  { href: '/blog', label: 'Artigos' },
 ]
 
 export function Nav() {
