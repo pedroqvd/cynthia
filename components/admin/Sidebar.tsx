@@ -106,28 +106,16 @@ export function AdminSidebar() {
         overflow: 'hidden',
       }}
     >
-      {/* Logo */}
+      {/* Header */}
       <div
         style={{
           padding: '1.5rem',
           borderBottom: '1px solid rgba(184,150,90,0.15)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: collapsed ? 'center' : 'space-between',
+          justifyContent: collapsed ? 'center' : 'flex-end',
         }}
       >
-        {!collapsed && (
-          <span
-            style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontSize: '1rem',
-              color: '#f5f0e8',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Dra. <span style={{ color: '#b8965a' }}>Cynthia Quevedo</span>
-          </span>
-        )}
         <button
           onClick={() => setCollapsed(!collapsed)}
           style={{
@@ -181,19 +169,8 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Voltar ao site + Logout */}
+      {/* Logout */}
       <div style={{ padding: '1rem', borderTop: '1px solid rgba(184,150,90,0.15)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
-        {!collapsed && (
-          <Link
-            href="/"
-            style={{ fontSize: '.72rem', color: '#7a7570', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1 7h12M5 3L1 7l4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Ver site
-          </Link>
-        )}
         <button
           onClick={handleLogout}
           style={{
