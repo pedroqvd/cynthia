@@ -112,24 +112,24 @@ function EspCard({
   return (
     <div
       style={{
-        background: '#EDE7D9',
+        background: '#F5F0E6',
         padding: '2.5rem',
         borderRadius: '10px',
         border: '0.5px solid #EAE3D2',
         position: 'relative',
         overflow: 'hidden',
         cursor: 'default',
-        transition: 'box-shadow .3s, transform .3s',
+        transition: 'border-color .3s, transform .3s',
       }}
       className="max-md:!p-7"
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLElement
-        el.style.boxShadow = '0 8px 40px rgba(27,107,90,0.1)'
-        el.style.transform = 'translateY(-4px)'
+        el.style.borderColor = '#C9A96E'
+        el.style.transform = 'translateY(-2px)'
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLElement
-        el.style.boxShadow = 'none'
+        el.style.borderColor = '#EAE3D2'
         el.style.transform = 'translateY(0)'
       }}
     >

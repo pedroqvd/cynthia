@@ -90,8 +90,8 @@ const config: Config = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-up': 'fadeUp 0.9s ease both',
-        'fade-in': 'fadeIn 0.8s ease both',
+        'fade-up': 'fadeUp 0.4s ease both',
+        'fade-in': 'fadeIn 0.4s ease both',
       },
     },
   },

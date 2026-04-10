@@ -84,6 +84,8 @@ export function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
 
+  const isLoginPage = pathname === '/admin/login'
+
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -107,40 +109,42 @@ export function AdminSidebar() {
       }}
     >
       {/* Header */}
-      <div
-        style={{
-          padding: '1.5rem',
-          borderBottom: '1px solid rgba(184,150,90,0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: collapsed ? 'center' : 'flex-end',
-        }}
-      >
-        <button
-          onClick={() => setCollapsed(!collapsed)}
+      {!isLoginPage && (
+        <div
           style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: '#7a7570',
-            padding: '4px',
+            padding: '1.5rem',
+            borderBottom: '1px solid rgba(184,150,90,0.15)',
             display: 'flex',
-            flexShrink: 0,
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-end',
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            {collapsed ? (
-              <path d="M2 8h12M6 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            ) : (
-              <path d="M14 8H2M10 4l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            )}
-          </svg>
-        </button>
-      </div>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#7a7570',
+              padding: '4px',
+              display: 'flex',
+              flexShrink: 0,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              {collapsed ? (
+                <path d="M2 8h12M6 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              ) : (
+                <path d="M14 8H2M10 4l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              )}
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Navegação */}
       <nav style={{ flex: 1, padding: '1rem 0', overflow: 'hidden' }}>
-        {LINKS.map((link) => {
+        {!isLoginPage && LINKS.map((link) => {
           const active = pathname.startsWith(link.href)
           return (
             <Link

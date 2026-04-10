@@ -44,37 +44,12 @@ export function Nav() {
         <Link
           href="#"
           style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
-            fontSize: '1.1rem',
-            fontWeight: 400,
-            color: '#1C1C1C',
-            letterSpacing: '.06em',
-            textDecoration: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '.5rem',
+            textDecoration: 'none',
           }}
         >
-          <span
-            style={{
-              width: '32px',
-              height: '32px',
-              background: '#1B6B5A',
-              color: '#F5F0E6',
-              borderRadius: '2px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontSize: '.9rem',
-              fontWeight: 500,
-              letterSpacing: '-.01em',
-              flexShrink: 0,
-            }}
-          >
-            CQ
-          </span>
-          Dra. Cynthia <span style={{ color: '#1B6B5A' }}>Quevedo</span>
+          <img src="/logo-cq.png" alt="Dra. Cynthia Quevedo" style={{ height: '40px', width: 'auto' }} />
         </Link>
 
         {/* Links desktop */}

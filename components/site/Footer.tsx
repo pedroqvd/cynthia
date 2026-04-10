@@ -30,18 +30,8 @@ export function Footer() {
       </div>
 
       {/* Monograma central */}
-      <div style={{ textAlign: 'center' }}>
-        <div
-          style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
-            fontSize: '1.6rem',
-            fontWeight: 400,
-            color: '#1C1C1C',
-            letterSpacing: '.04em',
-          }}
-        >
-          Dra. Cynthia <span style={{ color: '#1B6B5A' }}>Quevedo</span>
-        </div>
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img src="/logo-cq.png" alt="Dra. Cynthia Quevedo" style={{ height: '70px', width: 'auto', marginBottom: '.5rem' }} />
         <div
           style={{
             fontSize: '.62rem',
