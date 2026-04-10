@@ -18,22 +18,40 @@ function ResetPasswordForm() {
   const code = params.get('code')
 
   // Troca o código da URL por uma sessão válida
+  // Suporta fluxo PKCE (?code=) e fluxo implícito legado (#access_token=)
   useEffect(() => {
-    if (!code) {
-      setExchanging(false)
+    const supabase = createClient()
+
+    if (code) {
+      // Fluxo PKCE — troca code por sessão
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          toast.error('Link inválido ou expirado. Solicite um novo.')
+          setValid(false)
+        } else {
+          setValid(true)
+        }
+        setExchanging(false)
+      })
       return
     }
 
-    const supabase = createClient()
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        toast.error('Link inválido ou expirado. Solicite um novo.')
-        setValid(false)
-      } else {
-        setValid(true)
-      }
-      setExchanging(false)
-    })
+    // Fluxo implícito legado — hash contém access_token
+    const hash = typeof window !== 'undefined' ? window.location.hash : ''
+    if (hash.includes('access_token')) {
+      supabase.auth.getSession().then(({ data, error }) => {
+        if (error || !data.session) {
+          toast.error('Link inválido ou expirado. Solicite um novo.')
+          setValid(false)
+        } else {
+          setValid(true)
+        }
+        setExchanging(false)
+      })
+      return
+    }
+
+    setExchanging(false)
   }, [code])
 
   async function handleSubmit(e: React.FormEvent) {

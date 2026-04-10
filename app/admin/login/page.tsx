@@ -44,7 +44,8 @@ function LoginForm() {
     setForgotLoading(true)
 
     try {
-      const redirectTo = `${window.location.origin}/admin/reset-password`
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      const redirectTo = `${appUrl}/admin/reset-password`
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
