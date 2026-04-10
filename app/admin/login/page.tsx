@@ -50,7 +50,9 @@ function LoginForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail, redirectTo }),
       })
-      const data = await res.json()
+
+      let data: { error?: string; success?: boolean } = {}
+      try { data = await res.json() } catch { /* body vazio */ }
 
       if (!res.ok) {
         toast.error(data.error ?? 'Erro ao enviar e-mail. Tente novamente.')
@@ -60,7 +62,7 @@ function LoginForm() {
         setView('login')
       }
     } catch {
-      toast.error('Erro ao conectar. Tente novamente.')
+      toast.error('Sem conexão. Verifique sua internet e tente novamente.')
     } finally {
       setForgotLoading(false)
     }
