@@ -11,6 +11,9 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [view, setView] = useState<'login' | 'forgot'>('login')
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotLoading, setForgotLoading] = useState(false)
   const params = useSearchParams()
   const redirect = params.get('redirect') ?? '/admin/dashboard'
 
@@ -33,6 +36,29 @@ function LoginForm() {
     } catch {
       toast.error('Erro ao conectar. Tente novamente.')
       setLoading(false)
+    }
+  }
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault()
+    setForgotLoading(true)
+
+    try {
+      const supabase = createClient()
+      const redirectTo = `${window.location.origin}/admin/reset-password`
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, { redirectTo })
+
+      if (error) {
+        toast.error('Erro ao enviar e-mail. Verifique o endereço e tente novamente.')
+      } else {
+        toast.success('Link enviado! Verifique sua caixa de entrada.')
+        setForgotEmail('')
+        setView('login')
+      }
+    } catch {
+      toast.error('Erro ao conectar. Tente novamente.')
+    } finally {
+      setForgotLoading(false)
     }
   }
 
@@ -79,109 +105,203 @@ function LoginForm() {
             marginBottom: '2.5rem',
           }}
         >
-          Painel administrativo
+          {view === 'login' ? 'Painel administrativo' : 'Recuperar senha'}
         </p>
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
-            <label style={{ fontSize: '.72rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a7570' }}>
-              E-mail
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(184,150,90,0.25)',
-                borderRadius: '2px',
-                padding: '.75rem 1rem',
-                color: '#f5f0e8',
-                fontSize: '.9rem',
-                outline: 'none',
-                width: '100%',
-              }}
-            />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
-            <label style={{ fontSize: '.72rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a7570' }}>
-              Senha
-            </label>
-            <div style={{ position: 'relative' }}>
+        {/* ── Login ── */}
+        {view === 'login' && (
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
+              <label style={{ fontSize: '.72rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a7570' }}>
+                E-mail
+              </label>
               <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="current-password"
+                autoComplete="email"
                 style={{
                   background: 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(184,150,90,0.25)',
                   borderRadius: '2px',
-                  padding: '.75rem 2.8rem .75rem 1rem',
+                  padding: '.75rem 1rem',
                   color: '#f5f0e8',
                   fontSize: '.9rem',
                   outline: 'none',
                   width: '100%',
                 }}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#7a7570',
-                  padding: '2px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                {showPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
-                    <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
-                    <line x1="1" y1="1" x2="23" y2="23"/>
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                )}
-              </button>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              background: loading ? '#7a7570' : '#b8965a',
-              color: '#0f0e0c',
-              border: 'none',
-              borderRadius: '2px',
-              padding: '.9rem',
-              fontSize: '.78rem',
-              fontWeight: 500,
-              letterSpacing: '.1em',
-              textTransform: 'uppercase',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              marginTop: '.5rem',
-              transition: 'background .2s',
-            }}
-          >
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
+              <label style={{ fontSize: '.72rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a7570' }}>
+                Senha
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(184,150,90,0.25)',
+                    borderRadius: '2px',
+                    padding: '.75rem 2.8rem .75rem 1rem',
+                    color: '#f5f0e8',
+                    fontSize: '.9rem',
+                    outline: 'none',
+                    width: '100%',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#7a7570',
+                    padding: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {showPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                background: loading ? '#7a7570' : '#b8965a',
+                color: '#0f0e0c',
+                border: 'none',
+                borderRadius: '2px',
+                padding: '.9rem',
+                fontSize: '.78rem',
+                fontWeight: 500,
+                letterSpacing: '.1em',
+                textTransform: 'uppercase',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                marginTop: '.5rem',
+                transition: 'background .2s',
+              }}
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setView('forgot')}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#7a7570',
+                fontSize: '.72rem',
+                letterSpacing: '.08em',
+                textAlign: 'center',
+                marginTop: '.25rem',
+                textDecoration: 'underline',
+                textUnderlineOffset: '3px',
+              }}
+            >
+              Esqueci a senha
+            </button>
+          </form>
+        )}
+
+        {/* ── Recuperar senha ── */}
+        {view === 'forgot' && (
+          <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <p style={{ fontSize: '.8rem', color: '#7a7570', lineHeight: 1.6, marginBottom: '.5rem' }}>
+              Digite o e-mail cadastrado. Você receberá um link para criar uma nova senha.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
+              <label style={{ fontSize: '.72rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a7570' }}>
+                E-mail
+              </label>
+              <input
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                required
+                autoComplete="email"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(184,150,90,0.25)',
+                  borderRadius: '2px',
+                  padding: '.75rem 1rem',
+                  color: '#f5f0e8',
+                  fontSize: '.9rem',
+                  outline: 'none',
+                  width: '100%',
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={forgotLoading}
+              style={{
+                background: forgotLoading ? '#7a7570' : '#b8965a',
+                color: '#0f0e0c',
+                border: 'none',
+                borderRadius: '2px',
+                padding: '.9rem',
+                fontSize: '.78rem',
+                fontWeight: 500,
+                letterSpacing: '.1em',
+                textTransform: 'uppercase',
+                cursor: forgotLoading ? 'not-allowed' : 'pointer',
+                marginTop: '.5rem',
+                transition: 'background .2s',
+              }}
+            >
+              {forgotLoading ? 'Enviando...' : 'Enviar link'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setView('login')}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#7a7570',
+                fontSize: '.72rem',
+                letterSpacing: '.08em',
+                textAlign: 'center',
+                marginTop: '.25rem',
+                textDecoration: 'underline',
+                textUnderlineOffset: '3px',
+              }}
+            >
+              ← Voltar ao login
+            </button>
+          </form>
+        )}
       </div>
     </div>
   )
