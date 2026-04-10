@@ -57,6 +57,7 @@ export function Sobre() {
             src="/images/cynthia-sobre.jpg"
             alt="Dra. Cynthia Quevedo — Cirurgiã-Dentista em Brasília"
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             style={{ objectFit: 'cover', objectPosition: 'center top' }}
           />
         </div>

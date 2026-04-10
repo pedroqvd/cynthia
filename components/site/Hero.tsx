@@ -204,6 +204,7 @@ export function Hero() {
           src="/images/cynthia-hero.jpg"
           alt="Dra. Cynthia Quevedo — Especialista em Estética Dental, Cirurgia e Prótese"
           fill
+          sizes="50vw"
           style={{ objectFit: 'cover', objectPosition: 'center top' }}
           priority
         />

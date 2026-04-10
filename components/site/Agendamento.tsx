@@ -68,6 +68,7 @@ export function Agendamento() {
           src="/images/cynthia-cta.jpg"
           alt="Dra. Cynthia Quevedo"
           fill
+          sizes="50vw"
           style={{ objectFit: 'cover', objectPosition: 'center top' }}
         />
         {/* Gradiente lateral */}
