@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -16,6 +16,12 @@ function LoginForm() {
   const [forgotLoading, setForgotLoading] = useState(false)
   const params = useSearchParams()
   const redirect = params.get('redirect') ?? '/admin/dashboard'
+
+  useEffect(() => {
+    if (params.get('error') === 'link_invalido') {
+      toast.error('Link de redefinição inválido ou expirado. Solicite um novo.')
+    }
+  }, [params])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -44,7 +50,7 @@ function LoginForm() {
     setForgotLoading(true)
 
     try {
-      const redirectTo = `${window.location.origin}/admin/reset-password`
+      const redirectTo = `${window.location.origin}/auth/callback?next=/admin/reset-password`
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
