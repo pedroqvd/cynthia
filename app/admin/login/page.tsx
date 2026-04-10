@@ -44,12 +44,16 @@ function LoginForm() {
     setForgotLoading(true)
 
     try {
-      const supabase = createClient()
       const redirectTo = `${window.location.origin}/admin/reset-password`
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, { redirectTo })
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail, redirectTo }),
+      })
+      const data = await res.json()
 
-      if (error) {
-        toast.error('Erro ao enviar e-mail. Verifique o endereço e tente novamente.')
+      if (!res.ok) {
+        toast.error(data.error ?? 'Erro ao enviar e-mail. Tente novamente.')
       } else {
         toast.success('Link enviado! Verifique sua caixa de entrada.')
         setForgotEmail('')
