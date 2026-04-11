@@ -42,7 +42,13 @@ export async function POST(req: NextRequest) {
     })
 
     if (resetError) {
-      return NextResponse.json({ error: 'Erro ao enviar e-mail. Tente novamente.' }, { status: 500 })
+      const isRateLimit = resetError.message?.toLowerCase().includes('rate') ||
+        resetError.message?.toLowerCase().includes('limit') ||
+        resetError.status === 429
+      const msg = isRateLimit
+        ? 'Muitas tentativas. Aguarde alguns minutos e tente novamente.'
+        : `Erro ao enviar e-mail: ${resetError.message}`
+      return NextResponse.json({ error: msg }, { status: isRateLimit ? 429 : 500 })
     }
 
     return NextResponse.json({ success: true })

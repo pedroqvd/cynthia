@@ -20,18 +20,26 @@ function CallbackHandler() {
     const hash = window.location.hash
 
     if (hash.includes('access_token')) {
-      // Fluxo implícito legado — o cliente Supabase processa o hash automaticamente
-      // Detecta type=recovery no hash para redirecionar para reset de senha
-      const isRecovery = hash.includes('type=recovery')
-      const next = params.get('next') ?? (isRecovery ? '/admin/reset-password' : '/admin/dashboard')
+      // Fluxo implícito legado — extrai tokens diretamente do hash e chama setSession()
+      // (getSession() pode ser chamado antes do cliente processar o hash)
+      const hashParams = new URLSearchParams(hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      const type = hashParams.get('type')
+      const next = type === 'recovery' ? '/admin/reset-password' : (params.get('next') ?? '/admin/dashboard')
 
-      supabase.auth.getSession().then(({ data }) => {
-        if (data.session) {
-          router.replace(next)
-        } else {
-          router.replace('/admin/login?error=link_invalido')
-        }
-      })
+      if (accessToken && refreshToken) {
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+          .then(({ data, error }) => {
+            if (!error && data.session) {
+              router.replace(next)
+            } else {
+              router.replace('/admin/login?error=link_invalido')
+            }
+          })
+      } else {
+        router.replace('/admin/login?error=link_invalido')
+      }
       return
     }
 
