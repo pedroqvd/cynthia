@@ -28,16 +28,19 @@ function LoginForm() {
     setLoading(true)
 
     try {
-      // Server Action: seta cookies server-side via next/headers (mais confiável)
+      // Server Action seta cookies server-side (next/headers)
+      // depois cliente navega com replace para carregar página limpa
       const result = await loginAction(email, password, redirect)
-      // Se chegou aqui, houve erro (redirect nunca retorna)
       if (result?.error) {
         toast.error(result.error)
         setLoading(false)
+        return
       }
+      // Cookies setados — hard navigation garante página limpa
+      window.location.replace(redirect)
     } catch {
-      // redirect() do Next.js lança internamente — não é erro real
-      // Se for outro erro de rede, mostra mensagem
+      toast.error('Erro ao conectar. Tente novamente.')
+      setLoading(false)
     }
   }
 

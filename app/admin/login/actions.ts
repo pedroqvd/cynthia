@@ -2,7 +2,6 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 
 export async function loginAction(
   email: string,
@@ -34,5 +33,6 @@ export async function loginAction(
     return { error: 'Credenciais inválidas. Tente novamente.' }
   }
 
-  redirect(redirectTo)
+  // Cookies setados — cliente faz a navegação para evitar estado preso
+  return { success: true }
 }
