@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Toaster } from 'sonner'
+import { loginAction } from './actions'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -27,26 +28,16 @@ function LoginForm() {
     setLoading(true)
 
     try {
-      // Login server-side para garantir que os cookies sejam definidos
-      // corretamente antes do middleware verificar a sessão
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        toast.error(data.error ?? 'Credenciais inválidas. Tente novamente.')
+      // Server Action: seta cookies server-side via next/headers (mais confiável)
+      const result = await loginAction(email, password, redirect)
+      // Se chegou aqui, houve erro (redirect nunca retorna)
+      if (result?.error) {
+        toast.error(result.error)
         setLoading(false)
-        return
       }
-
-      // Hard navigation após cookies definidos server-side
-      window.location.href = redirect
     } catch {
-      toast.error('Erro ao conectar. Tente novamente.')
-      setLoading(false)
+      // redirect() do Next.js lança internamente — não é erro real
+      // Se for outro erro de rede, mostra mensagem
     }
   }
 
