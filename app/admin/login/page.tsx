@@ -2,9 +2,9 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Toaster } from 'sonner'
-import { loginAction } from './actions'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -28,15 +28,13 @@ function LoginForm() {
     setLoading(true)
 
     try {
-      // Server Action seta cookies server-side (next/headers)
-      // depois cliente navega com replace para carregar página limpa
-      const result = await loginAction(email, password, redirect)
-      if (result?.error) {
-        toast.error(result.error)
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        toast.error('Credenciais inválidas. Tente novamente.')
         setLoading(false)
         return
       }
-      // Cookies setados — hard navigation garante página limpa
       window.location.replace(redirect)
     } catch {
       toast.error('Erro ao conectar. Tente novamente.')
