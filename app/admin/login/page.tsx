@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Toaster } from 'sonner'
 
@@ -28,16 +27,22 @@ function LoginForm() {
     setLoading(true)
 
     try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      // Login server-side para garantir que os cookies sejam definidos
+      // corretamente antes do middleware verificar a sessão
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
 
-      if (error) {
-        toast.error('Credenciais inválidas. Tente novamente.')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        toast.error(data.error ?? 'Credenciais inválidas. Tente novamente.')
         setLoading(false)
         return
       }
 
-      // Hard navigation para garantir que o middleware revalide a sessão
+      // Hard navigation após cookies definidos server-side
       window.location.href = redirect
     } catch {
       toast.error('Erro ao conectar. Tente novamente.')
