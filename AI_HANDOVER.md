@@ -89,7 +89,7 @@ Sem esta coluna o cron `/api/cron/avaliacao` falha com erro de coluna inexistent
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Configurada | Supabase → Project Settings → API |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ Configurada | Supabase → Project Settings → API |
 | `RESEND_API_KEY` | ✅ Configurada | resend.com → API Keys |
-| `RESEND_FROM_EMAIL` | ⚠️ **Pendente** | Ex: `noreply@dracynthia.com.br` (domínio verificado no Resend) |
+| `RESEND_FROM_EMAIL` | 🟡 Temporário | Não configurada → usa `onboarding@resend.dev` como fallback. Setar `noreply@dracynthia.com.br` após verificar domínio no Resend |
 | `ANTHROPIC_API_KEY` | ⚠️ **Pendente** | console.anthropic.com → API Keys |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | ⚠️ **Pendente** | GCP Console → Service Accounts → JSON em base64 |
 | `GOOGLE_CALENDAR_ID` | ⚠️ **Pendente** | Google Calendar → Configurações → ID do calendário |
@@ -98,51 +98,49 @@ Sem esta coluna o cron `/api/cron/avaliacao` falha com erro de coluna inexistent
 | `WHATSAPP_PHONE_NUMBER_ID` | ⚠️ **Pendente** | Meta Business Suite → WhatsApp → Phone Number ID |
 | `WHATSAPP_APP_SECRET` | ⚠️ **Pendente** | Meta Business Suite → App → App Secret |
 | `WHATSAPP_VERIFY_TOKEN` | ⚠️ **Pendente** | Gerar string aleatória e registrar no webhook Meta |
-| `UPSTASH_REDIS_REST_URL` | ⚠️ **Pendente** | upstash.com → Database Redis → REST URL |
-| `UPSTASH_REDIS_REST_TOKEN` | ⚠️ **Pendente** | upstash.com → Database Redis → REST Token |
+| `UPSTASH_REDIS_REST_URL` | ✅ Configurada | upstash.com → Database Redis → REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | ✅ Configurada | upstash.com → Database Redis → REST Token |
 | `CRON_SECRET` | ⚠️ **Pendente** | Gerar string aleatória (protege endpoints `/api/cron/*`) |
 
 ---
 
 ## O Que Ainda Precisa Ser Feito
 
-### 🔴 Crítico (funcionalidade quebrada sem isso):
+### ✅ Já resolvido:
+- Migração SQL `avaliacao_enviada` — executada com sucesso
+- `CRON_SECRET`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `RESEND_API_KEY` — configurados no Vercel
+- E-mail: usando `onboarding@resend.dev` como remetente temporário (ver abaixo)
 
-1. **Migração SQL** no Supabase SQL Editor:
-   ```sql
-   ALTER TABLE appointments ADD COLUMN IF NOT EXISTS avaliacao_enviada BOOLEAN DEFAULT false;
-   ```
+### 🔴 Crítico (ainda pendente):
 
-2. **Domínio na Vercel:** configurar `dracynthia.com.br` (DNS CNAME/A records apontando para Vercel)
+1. **Domínio na Vercel:** configurar `dracynthia.com.br` (DNS CNAME/A records apontando para Vercel)
 
-3. **Supabase Auth URLs:** em Authentication → URL Configuration:
+2. **Supabase Auth URLs:** em Authentication → URL Configuration:
    - Site URL: `https://dracynthia.com.br`
    - Redirect URLs: `https://dracynthia.com.br/auth/callback`
 
-### 🟡 Importante (funcionalidades inativas sem isso):
+### 🟡 Importante (funcionalidades inativas):
 
-4. **`RESEND_FROM_EMAIL`** — verificar domínio `dracynthia.com.br` no painel do Resend antes de configurar
+3. **`ANTHROPIC_API_KEY`** — habilita sugestão de resposta com IA no WhatsApp inbox (botão ✦)
 
-5. **`ANTHROPIC_API_KEY`** — habilita sugestão de resposta com IA no WhatsApp inbox (botão ✦)
+4. **Google Calendar** — configurar `GOOGLE_SERVICE_ACCOUNT_JSON` (JSON em base64) e `GOOGLE_CALENDAR_ID`; compartilhar o calendário com o e-mail da service account
 
-6. **Google Calendar** — configurar `GOOGLE_SERVICE_ACCOUNT_JSON` (JSON em base64) e `GOOGLE_CALENDAR_ID`; compartilhar o calendário com o e-mail da service account
-
-7. **WhatsApp Business API** — configurar as 4 vars do Meta; registrar webhook em:
+5. **WhatsApp Business API** — configurar as 4 vars do Meta; registrar webhook em:
    `https://dracynthia.com.br/api/webhooks/whatsapp`
 
-8. **`GOOGLE_REVIEWS_URL`** — link de avaliação do Google Business Profile (`https://g.page/r/[ID]/review`)
-
-9. **Upstash Redis** — `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`; sem isso `/api/booking` falha no rate limiting (o código tem fallback gracioso, mas não é ideal)
-
-10. **`CRON_SECRET`** — sem ele os endpoints de cron ficam sem proteção
+6. **`GOOGLE_REVIEWS_URL`** — link de avaliação do Google Business Profile (`https://g.page/r/[ID]/review`)
 
 ### 🟢 Conteúdo e configuração:
 
-11. **Preencher `/admin/config`** — nome do consultório, CRO, endereço, WhatsApp, horários, headline do Hero, textos
+7. **Preencher `/admin/config`** — nome do consultório, CRO, endereço, WhatsApp, horários, headline do Hero, textos
 
-12. **Fotos reais** — substituir placeholders no Hero, Sobre e Resultados
+8. **Fotos reais** — substituir placeholders no Hero, Sobre e Resultados
 
-13. **Depoimentos e antes/depois** — criar registros em `/admin/conteudo`
+9. **Depoimentos e antes/depois** — criar registros em `/admin/conteudo`
+
+### ⚪ Baixa prioridade:
+
+10. **`RESEND_FROM_EMAIL`** — atualmente usa `onboarding@resend.dev` (funciona para testes). Quando `dracynthia.com.br` estiver no ar: adicionar o domínio em resend.com → Domains, verificar via DNS, depois setar `RESEND_FROM_EMAIL=noreply@dracynthia.com.br` no Vercel
 
 ---
 

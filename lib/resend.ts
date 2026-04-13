@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? 'noreply@dracynthia.com.br'
+// Temporário: usa domínio compartilhado do Resend até dracynthia.com.br ser verificado.
+// Quando o domínio estiver configurado: setar RESEND_FROM_EMAIL=noreply@dracynthia.com.br no Vercel.
+const FROM = process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev'
 
 /** E-mail de confirmação de agendamento para o paciente */
 export async function sendConfirmationEmail(params: {
