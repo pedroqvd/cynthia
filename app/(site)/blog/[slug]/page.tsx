@@ -95,23 +95,33 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           <div
             style={{
               maxWidth: '1000px',
-              margin: '0 auto 4rem',
-              aspectRatio: '16/9',
-              position: 'relative',
-              borderRadius: '10px',
-              overflow: 'hidden',
-              border: '0.5px solid #EAE3D2',
+              margin: '0 auto 5rem',
+              padding: '1.25rem',
+              background: '#FFFFFF',
+              borderRadius: '16px',
+              border: '1px solid rgba(201,169,110,0.15)',
+              boxShadow: '0 25px 60px -12px rgba(27,107,90, 0.08)',
               animation: 'fadeIn 0.6s 0.3s ease both'
             }}
-            className="max-md:mx-6"
+            className="max-md:mx-6 max-md:p-3"
           >
-             <Image
-              src={post.cover_image}
-              alt={post.title}
-              fill
-              style={{ objectFit: 'cover' }}
-              priority
-            />
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '16/9',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            >
+               <Image
+                src={post.cover_image}
+                alt={post.title}
+                fill
+                style={{ objectFit: 'cover' }}
+                priority
+              />
+            </div>
           </div>
         )}
 

@@ -58,39 +58,66 @@ export function Agendamento() {
       }}
       className="max-md:!grid-cols-1"
     >
-      {/* ── Lado esquerdo: foto ── */}
+      {/* ── Lado esquerdo: foto flutuante ── */}
       <div
-        style={{ position: 'relative', minHeight: '500px' }}
+        style={{ 
+          position: 'relative', 
+          minHeight: '600px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '6rem 4rem'
+        }}
         className="max-md:hidden"
       >
-        {/* Foto da Dra. Cynthia — blusa tiffany, fundo preto */}
-        <Image
-          src="/images/cynthia-cta.jpg"
-          alt="Dra. Cynthia Quevedo"
-          fill
-          sizes="50vw"
-          style={{ objectFit: 'cover', objectPosition: 'center top' }}
-        />
-        {/* Gradiente lateral */}
+        {/* Moldura offset deslocada levemente para diagonal invertida (esquerda-baixo) */}
         <div
           style={{
             position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to right, transparent 60%, #163D32 100%)',
+            inset: '6rem 4rem',
+            border: '1px solid rgba(201,169,110,0.35)',
+            transform: 'translate(-1.5rem, 1.5rem)',
+            borderRadius: '12px',
+            zIndex: 1,
           }}
         />
-        {/* Monograma flutuante */}
+
+        {/* Wrapper dinâmico da imagem */}
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            zIndex: 2,
+            boxShadow: '0 30px 60px -15px rgba(0,0,0, 0.45)',
+          }}
+        >
+          {/* Foto da Dra. Cynthia — blusa tiffany, fundo preto */}
+          <Image
+            src="/images/cynthia-cta.jpg"
+            alt="Dra. Cynthia Quevedo"
+            fill
+            sizes="50vw"
+            style={{ objectFit: 'cover', objectPosition: 'center top' }}
+          />
+        </div>
+
+        {/* Monograma flutuante (fora da foto sobrepondo tudo como uma marca d'água) */}
         <div
           style={{
             position: 'absolute',
-            bottom: '3rem',
-            left: '3rem',
+            bottom: '2.5rem',
+            left: '2.5rem',
             fontFamily: 'Cormorant Garamond, Georgia, serif',
-            fontSize: '4rem',
+            fontSize: '4.5rem',
             fontWeight: 300,
-            color: 'rgba(201,169,110,0.25)',
+            color: 'rgba(201,169,110,0.3)',
             lineHeight: 1,
             letterSpacing: '-.02em',
+            zIndex: 3,
+            pointerEvents: 'none'
           }}
         >
           CQ
