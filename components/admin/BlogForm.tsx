@@ -8,6 +8,22 @@ import { ImageCropper } from './ImageCropper'
 import { revalidateSite } from '@/app/actions'
 import Image from 'next/image'
 
+/** Renderização simplificada de Markdown → HTML para preview */
+function renderMarkdown(md: string): string {
+  return md
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^(?!<[hul])(.+)$/gm, '<p>$1</p>')
+    .replace(/<p><\/p>/g, '')
+}
+
 interface Post {
   id?: string
   title: string
@@ -22,6 +38,7 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [contentTab, setContentTab] = useState<'editar' | 'preview'>('editar')
   const [cropFile, setCropFile] = useState<File | null>(null)
   const [formData, setFormData] = useState<Post>(
     initialData || {
@@ -133,21 +150,57 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
-          <label style={{ fontSize: '.8rem', color: '#7a7570', fontWeight: 500 }}>Corpo do Texto (Use formato Markdown para negritos e subtítulos)</label>
-          <div style={{ display: 'flex', padding: '.5rem 1rem', background: 'rgba(184,150,90,0.08)', borderRadius: '4px 4px 0 0', border: '1px solid #e5e5e3', borderBottom: 'none', gap: '1rem', fontSize: '.75rem', color: '#7a7570' }}>
-            <span>**Negrito**</span>
-            <span>*Itálico*</span>
-            <span># Título Gigante</span>
-            <span>## Subtítulo Grande</span>
+          <label style={{ fontSize: '.8rem', color: '#7a7570', fontWeight: 500 }}>Corpo do Texto</label>
+          {/* Toolbar de tabs */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.4rem 1rem', background: 'rgba(184,150,90,0.08)', borderRadius: '4px 4px 0 0', border: '1px solid #e5e5e3', borderBottom: 'none' }}>
+            <div style={{ display: 'flex', gap: '1rem', fontSize: '.75rem', color: '#7a7570' }}>
+              <span>**Negrito**</span>
+              <span>*Itálico*</span>
+              <span># H1</span>
+              <span>## H2</span>
+            </div>
+            <div style={{ display: 'flex', border: '1px solid #e5e5e340', borderRadius: '2px', overflow: 'hidden' }}>
+              {(['editar', 'preview'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setContentTab(tab)}
+                  style={{
+                    padding: '.25rem .75rem', border: 'none', cursor: 'pointer',
+                    fontSize: '.72rem', textTransform: 'capitalize',
+                    background: contentTab === tab ? '#0f0e0c' : 'transparent',
+                    color: contentTab === tab ? '#f5f0e8' : '#7a7570',
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
-          <textarea
-            required
-            rows={20}
-            value={formData.content}
-            onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-            placeholder="Escreva seu artigo aqui..."
-            style={{ ...inputStyle, borderRadius: '0 0 4px 4px', resize: 'vertical', fontFamily: 'monospace', fontSize: '.9rem' }}
-          />
+          {contentTab === 'editar' ? (
+            <textarea
+              required
+              rows={20}
+              value={formData.content}
+              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+              placeholder="Escreva seu artigo aqui..."
+              style={{ ...inputStyle, borderRadius: '0 0 4px 4px', resize: 'vertical', fontFamily: 'monospace', fontSize: '.9rem' }}
+            />
+          ) : (
+            <div
+              style={{
+                ...inputStyle,
+                borderRadius: '0 0 4px 4px',
+                minHeight: '400px',
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: '.9rem',
+                lineHeight: 1.8,
+                color: '#0f0e0c',
+              }}
+              // eslint-disable-next-line react/no-danger
+              dangerouslySetInnerHTML={{ __html: formData.content ? renderMarkdown(formData.content) : '<p style="color:#7a7570">Nenhum conteúdo ainda...</p>' }}
+            />
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
