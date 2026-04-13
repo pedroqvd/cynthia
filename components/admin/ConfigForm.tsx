@@ -56,7 +56,13 @@ const SECTIONS = [
 export function ConfigForm({ config: initialConfig }: Props) {
   const [config, setConfig] = useState(initialConfig)
   const [loading, setLoading] = useState(false)
-  const [cropTarget, setCropTarget] = useState<{ file: File, key: string, aspect: number } | null>(null)
+  const [cropTarget, setCropTarget] = useState<{ file?: File, imageUrl?: string, key: string, aspect: number } | null>(null)
+
+  const fallbacks: Record<string, string> = {
+    img_hero: '/images/cynthia-hero.jpg',
+    img_sobre: '/images/cynthia-sobre.jpg',
+    img_cta: '/images/cynthia-cta.jpg',
+  }
 
   function handleFileSelectConfig(e: React.ChangeEvent<HTMLInputElement>, key: string, aspect: number) {
     const file = e.target.files?.[0]
@@ -124,16 +130,19 @@ export function ConfigForm({ config: initialConfig }: Props) {
                   </label>
                   {field.type === 'image' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', marginBottom: '.5rem' }}>
-                      {config[field.key] && (
-                        <div style={{ width: '140px', aspectRatio: field.aspect as number, borderRadius: '4px', overflow: 'hidden', border: '1px solid #e5e5e3' }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={config[field.key]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                      )}
-                      <label style={{ display: 'inline-block', padding: '.5rem .8rem', background: '#f5f5f5', border: '1px solid #e5e5e3', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '.75rem', width: 'max-content', color: '#0f0e0c', fontWeight: 500 }}>
-                        {loading ? 'Processando...' : 'Fazer Upload e Enquadrar'}
-                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelectConfig(e, field.key, field.aspect as number)} disabled={loading} />
-                      </label>
+                      <div style={{ width: '140px', aspectRatio: field.aspect as number, borderRadius: '4px', overflow: 'hidden', border: '1px solid #e5e5e3' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={config[field.key] || fallbacks[field.key]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+                        <button type="button" onClick={() => setCropTarget({ imageUrl: config[field.key] || fallbacks[field.key], key: field.key, aspect: field.aspect as number })} disabled={loading} style={{ padding: '.5rem .8rem', background: '#f5f5f5', border: '1px solid #e5e5e3', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '.75rem', color: '#0f0e0c', fontWeight: 500 }}>
+                          Ajustar Imagem Atual
+                        </button>
+                        <label style={{ display: 'inline-block', padding: '.5rem .8rem', background: '#f5f5f5', border: '1px solid #e5e5e3', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '.75rem', width: 'max-content', color: '#0f0e0c', fontWeight: 500 }}>
+                          {loading ? 'Processando...' : 'Novo Upload'}
+                          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelectConfig(e, field.key, field.aspect as number)} disabled={loading} />
+                        </label>
+                      </div>
                     </div>
                   ) : field.type === 'textarea' ? (
                     <textarea
@@ -181,6 +190,7 @@ export function ConfigForm({ config: initialConfig }: Props) {
 
       <ImageCropper
         imageFile={cropTarget?.file || null}
+        imageUrl={cropTarget?.imageUrl || null}
         aspectRatio={cropTarget?.aspect || 1}
         onCancel={() => setCropTarget(null)}
         onConfirm={handleCropConfirm}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import Cropper from 'react-easy-crop'
 import type { Area } from 'react-easy-crop'
@@ -47,19 +47,30 @@ export async function getCroppedImg(
 }
 
 interface Props {
-  imageFile: File | null
+  imageFile?: File | null
+  imageUrl?: string | null
   aspectRatio: number
   onCancel: () => void
   onConfirm: (croppedFile: File) => void
 }
 
-export function ImageCropper({ imageFile, aspectRatio, onCancel, onConfirm }: Props) {
+export function ImageCropper({ imageFile, imageUrl, aspectRatio, onCancel, onConfirm }: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [objectUrl, setObjectUrl] = useState<string | null>(null)
 
-  const imageSrc = imageFile ? URL.createObjectURL(imageFile) : null
+  useEffect(() => {
+    if (imageFile) {
+      const url = URL.createObjectURL(imageFile)
+      setObjectUrl(url)
+      return () => URL.revokeObjectURL(url)
+    }
+    setObjectUrl(null)
+  }, [imageFile])
+
+  const imageSrc = objectUrl || imageUrl || null
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels)
@@ -79,7 +90,7 @@ export function ImageCropper({ imageFile, aspectRatio, onCancel, onConfirm }: Pr
   }
 
   return (
-    <Dialog.Root open={!!imageFile} onOpenChange={(open) => !open && onCancel()}>
+    <Dialog.Root open={!!(imageFile || imageUrl)} onOpenChange={(open) => !open && onCancel()}>
       <Dialog.Portal>
         <Dialog.Overlay style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999 }} />
         <Dialog.Content style={{
