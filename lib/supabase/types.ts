@@ -250,6 +250,124 @@ export interface Database {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          user_id: string
+          role: 'admin' | 'secretaria'
+          nome: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          role: 'admin' | 'secretaria'
+          nome?: string | null
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          role?: 'admin' | 'secretaria'
+          nome?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_categories: {
+        Row: {
+          id: string
+          nome: string
+          tipo: 'receita' | 'despesa'
+          cor: string
+          ordem: number
+          ativo: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          tipo: 'receita' | 'despesa'
+          cor?: string
+          ordem?: number
+          ativo?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+          tipo?: 'receita' | 'despesa'
+          cor?: string
+          ordem?: number
+          ativo?: boolean
+        }
+        Relationships: []
+      }
+      financial_entries: {
+        Row: {
+          id: string
+          tipo: 'receita' | 'despesa'
+          descricao: string
+          valor: number
+          data: string
+          categoria_id: string | null
+          lead_id: string | null
+          appointment_id: string | null
+          forma_pagamento: string | null
+          status: 'pendente' | 'confirmado' | 'cancelado'
+          notas: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tipo: 'receita' | 'despesa'
+          descricao: string
+          valor: number
+          data: string
+          categoria_id?: string | null
+          lead_id?: string | null
+          appointment_id?: string | null
+          forma_pagamento?: string | null
+          status?: 'pendente' | 'confirmado' | 'cancelado'
+          notas?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tipo?: 'receita' | 'despesa'
+          descricao?: string
+          valor?: number
+          data?: string
+          categoria_id?: string | null
+          lead_id?: string | null
+          appointment_id?: string | null
+          forma_pagamento?: string | null
+          status?: 'pendente' | 'confirmado' | 'cancelado'
+          notas?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'financial_entries_categoria_id_fkey'
+            columns: ['categoria_id']
+            referencedRelation: 'financial_categories'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'financial_entries_lead_id_fkey'
+            columns: ['lead_id']
+            referencedRelation: 'leads'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'financial_entries_appointment_id_fkey'
+            columns: ['appointment_id']
+            referencedRelation: 'appointments'
+            referencedColumns: ['id']
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -274,3 +392,6 @@ export type BeforeAfter = Database['public']['Tables']['before_after']['Row']
 export type Testimonial = Database['public']['Tables']['testimonials']['Row']
 export type ActivityLog = Database['public']['Tables']['activity_log']['Row']
 export type SiteConfig = Database['public']['Tables']['site_config']['Row']
+export type UserRole = Database['public']['Tables']['user_roles']['Row']
+export type FinancialCategory = Database['public']['Tables']['financial_categories']['Row']
+export type FinancialEntry = Database['public']['Tables']['financial_entries']['Row']

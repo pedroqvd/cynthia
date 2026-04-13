@@ -65,19 +65,85 @@ Autorizado: NextResponse.next() | Não autorizado: redirect('/admin/login')
 | `testimonials` | id, nome, cargo, texto, foto_url, nota, ativo, ordem |
 | `activity_log` | id, lead_id, user_id, acao, detalhes, created_at |
 | `site_config` | key, value, updated_at |
+| `user_roles` | user_id (FK auth.users), role ('admin'\|'secretaria'), nome, updated_at |
+| `financial_categories` | id, nome, tipo ('receita'\|'despesa'), cor, ordem, ativo, created_at |
+| `financial_entries` | id, tipo, descricao, valor, data, categoria_id, lead_id, appointment_id, forma_pagamento, status, notas, created_by, created_at, updated_at |
 
 ### Enums de status:
 - **leads.status**: `novo` | `em_contato` | `agendado` | `proposta` | `fechado`
 - **leads.urgencia**: `alta` | `media` | `baixa`
 - **appointments.status**: `agendado` | `confirmado` | `realizado` | `cancelado`
 - **messages.direction**: `in` | `out`
+- **financial_entries.status**: `pendente` | `confirmado` | `cancelado`
 
-### ⚠️ Migração OBRIGATÓRIA (ainda pendente):
+### ⚠️ Migrações pendentes (executar no Supabase SQL Editor):
 ```sql
+-- 1. Campo avaliacao_enviada (obrigatório para cron /api/cron/avaliacao)
 ALTER TABLE appointments
 ADD COLUMN IF NOT EXISTS avaliacao_enviada BOOLEAN DEFAULT false;
+
+-- 2. Módulo Financeiro (obrigatório para /admin/financeiro)
+CREATE TABLE IF NOT EXISTS user_roles (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'secretaria' CHECK (role IN ('admin','secretaria')),
+  nome TEXT,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS financial_categories (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome TEXT NOT NULL,
+  tipo TEXT NOT NULL CHECK (tipo IN ('receita','despesa')),
+  cor TEXT NOT NULL DEFAULT '#7a7570',
+  ordem INT NOT NULL DEFAULT 0,
+  ativo BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS financial_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tipo TEXT NOT NULL CHECK (tipo IN ('receita','despesa')),
+  descricao TEXT NOT NULL,
+  valor NUMERIC(12,2) NOT NULL,
+  data DATE NOT NULL,
+  categoria_id UUID REFERENCES financial_categories(id),
+  lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
+  appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL,
+  forma_pagamento TEXT,
+  status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente','confirmado','cancelado')),
+  notas TEXT,
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Seed de categorias
+INSERT INTO financial_categories (nome, tipo, cor, ordem) VALUES
+  ('Consulta', 'receita', '#b8965a', 1),
+  ('Procedimento Estético', 'receita', '#c4a882', 2),
+  ('Ortodontia', 'receita', '#d4b896', 3),
+  ('Outros Serviços', 'receita', '#7a7570', 4),
+  ('Aluguel', 'despesa', '#e07070', 1),
+  ('Material Clínico', 'despesa', '#e09070', 2),
+  ('Salários', 'despesa', '#e0b070', 3),
+  ('Marketing', 'despesa', '#70a0e0', 4),
+  ('Equipamentos', 'despesa', '#9070e0', 5),
+  ('Outros', 'despesa', '#7a7570', 6)
+ON CONFLICT DO NOTHING;
+
+-- RLS básico
+ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE financial_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE financial_entries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Auth read categories" ON financial_categories FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Auth read entries" ON financial_entries FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Auth insert entries" ON financial_entries FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Auth update entries" ON financial_entries FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Service full entries" ON financial_entries FOR ALL TO service_role USING (true);
+CREATE POLICY "Auth read roles" ON user_roles FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Service manage roles" ON user_roles FOR ALL TO service_role USING (true);
 ```
-Sem esta coluna o cron `/api/cron/avaliacao` falha com erro de coluna inexistente.
 
 ---
 
@@ -100,7 +166,7 @@ Sem esta coluna o cron `/api/cron/avaliacao` falha com erro de coluna inexistent
 | `WHATSAPP_VERIFY_TOKEN` | ⚠️ **Pendente** | Gerar string aleatória e registrar no webhook Meta |
 | `UPSTASH_REDIS_REST_URL` | ✅ Configurada | upstash.com → Database Redis → REST URL |
 | `UPSTASH_REDIS_REST_TOKEN` | ✅ Configurada | upstash.com → Database Redis → REST Token |
-| `CRON_SECRET` | ⚠️ **Pendente** | Gerar string aleatória (protege endpoints `/api/cron/*`) |
+| `CRON_SECRET` | ✅ Auto-injetado | Vercel injeta automaticamente como `Authorization: Bearer <secret>` nos cron jobs |
 
 ---
 
@@ -109,13 +175,17 @@ Sem esta coluna o cron `/api/cron/avaliacao` falha com erro de coluna inexistent
 ### ✅ Já resolvido:
 - Migração SQL `avaliacao_enviada` — executada com sucesso
 - `CRON_SECRET`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `RESEND_API_KEY` — configurados no Vercel
+- `CRON_SECRET` é injetado automaticamente pelo Vercel nos headers dos cron jobs
 - E-mail: usando `onboarding@resend.dev` como remetente temporário (ver abaixo)
+- Módulo Financeiro implementado (UI + API) — pendente apenas a migração SQL no Supabase
 
 ### 🔴 Crítico (ainda pendente):
 
-1. **Domínio na Vercel:** configurar `dracynthia.com.br` (DNS CNAME/A records apontando para Vercel)
+1. **Migração SQL do módulo Financeiro:** executar o bloco SQL da seção "Schema" acima para criar as tabelas `user_roles`, `financial_categories`, `financial_entries` e seed de categorias. Sem isso a rota `/admin/financeiro` retorna 500.
 
-2. **Supabase Auth URLs:** em Authentication → URL Configuration:
+3. **Domínio na Vercel:** configurar `dracynthia.com.br` (DNS CNAME/A records apontando para Vercel)
+
+4. **Supabase Auth URLs:** em Authentication → URL Configuration:
    - Site URL: `https://dracynthia.com.br`
    - Redirect URLs: `https://dracynthia.com.br/auth/callback`
 
@@ -160,9 +230,10 @@ Sem esta coluna o cron `/api/cron/avaliacao` falha com erro de coluna inexistent
 | Badge de leads novos no título da aba | `components/admin/AdminTitleBadge.tsx` |
 | Exportação CSV de leads | `app/api/leads/route.ts` (`?format=csv`) |
 | Automações manuais | `app/admin/automacoes/page.tsx` |
-| Configurações do site | `app/admin/config/page.tsx` + `components/admin/ConfigForm.tsx` |
+| Configurações do site + Equipe | `app/admin/config/page.tsx` + `components/admin/ConfigForm.tsx` + `components/admin/EquipeManager.tsx` |
 | Conteúdo (before/after, depoimentos) | `components/admin/ConteudoManager.tsx` |
 | Skeletons de carregamento | `app/admin/*/loading.tsx` |
+| **Financeiro (receitas, despesas, gráficos)** | `app/admin/financeiro/page.tsx` + `components/admin/FinanceiroManager.tsx` |
 
 ### Site Público
 | Feature | Arquivo |
@@ -201,6 +272,11 @@ Sem esta coluna o cron `/api/cron/avaliacao` falha com erro de coluna inexistent
 | `/api/auth/forgot-password` | POST | Dispara e-mail de reset de senha |
 | `/api/upload` | POST | Upload de imagens para Supabase Storage |
 | `/api/cron/*` | GET | Cron jobs (requerem header `Authorization: Bearer CRON_SECRET`) |
+| `/api/financial/entries` | GET / POST | Lista / cria lançamentos financeiros |
+| `/api/financial/entries/[id]` | PATCH / DELETE | Atualiza / exclui lançamento (DELETE exige admin) |
+| `/api/financial/categories` | GET | Lista categorias ativas |
+| `/api/financial/summary` | GET | Totais do mês + gráfico 6 meses + pizza por categoria |
+| `/api/financial/roles` | GET / PATCH | Lista usuários com roles / atualiza role (admin only) |
 
 ---
 

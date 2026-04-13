@@ -77,6 +77,16 @@ const LINKS = [
     ),
   },
   {
+    href: '/admin/financeiro',
+    label: 'Financeiro',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.2"/>
+        <path d="M9 4.5v9M6.5 7c0-1.38.9-2.5 2.5-2.5s2.5 1.12 2.5 2.5c0 1.38-1 2-2.5 2s-2.5.62-2.5 2c0 1.38.9 2.5 2.5 2.5s2.5-1.12 2.5-2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
     href: '/admin/config',
     label: 'Configurações',
     icon: (
