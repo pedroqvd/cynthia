@@ -109,73 +109,74 @@ export function ConfigForm({ config: initialConfig }: Props) {
   }
 
   return (
-    <div>
-      {SECTIONS.map((section) => (
-        <div key={section.title} style={{ marginBottom: '2.5rem' }}>
-          <h2 style={{ fontSize: '.82rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a7570', marginBottom: '1rem', paddingBottom: '.5rem', borderBottom: '1px solid #e5e5e3' }}>
-            {section.title}
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {section.fields.map((field) => (
-              <div key={field.key}>
-                <label style={{ display: 'block', fontSize: '.75rem', letterSpacing: '.08em', color: '#7a7570', marginBottom: '.4rem' }}>
-                  {field.label}
-                </label>
-                {field.type === 'image' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', marginBottom: '.5rem' }}>
-                    {config[field.key] && (
-                      <div style={{ width: '140px', aspectRatio: field.aspect as number, borderRadius: '4px', overflow: 'hidden', border: '1px solid #e5e5e3' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={config[field.key]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                    )}
-                    <label style={{ display: 'inline-block', padding: '.5rem .8rem', background: '#f5f5f5', border: '1px solid #e5e5e3', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '.75rem', width: 'max-content', color: '#0f0e0c', fontWeight: 500 }}>
-                      {loading ? 'Processando...' : 'Fazer Upload e Enquadrar'}
-                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelectConfig(e, field.key, field.aspect as number)} disabled={loading} />
-                    </label>
-                  </div>
-                ) : field.type === 'textarea' ? (
-                  <textarea
-                    value={config[field.key] ?? ''}
-                    onChange={(e) => setConfig((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                    rows={3}
-                    style={inputStyle}
-                  />
-                ) : (
-                  <input
-                    type={field.type ?? 'text'}
-                    value={config[field.key] ?? ''}
-                    onChange={(e) => setConfig((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                    style={inputStyle}
-                  />
-                )}
-              </div>
-            ))}
+    <>
+      <div>
+        {SECTIONS.map((section) => (
+          <div key={section.title} style={{ marginBottom: '2.5rem' }}>
+            <h2 style={{ fontSize: '.82rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a7570', marginBottom: '1rem', paddingBottom: '.5rem', borderBottom: '1px solid #e5e5e3' }}>
+              {section.title}
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {section.fields.map((field) => (
+                <div key={field.key}>
+                  <label style={{ display: 'block', fontSize: '.75rem', letterSpacing: '.08em', color: '#7a7570', marginBottom: '.4rem' }}>
+                    {field.label}
+                  </label>
+                  {field.type === 'image' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', marginBottom: '.5rem' }}>
+                      {config[field.key] && (
+                        <div style={{ width: '140px', aspectRatio: field.aspect as number, borderRadius: '4px', overflow: 'hidden', border: '1px solid #e5e5e3' }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={config[field.key]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      )}
+                      <label style={{ display: 'inline-block', padding: '.5rem .8rem', background: '#f5f5f5', border: '1px solid #e5e5e3', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '.75rem', width: 'max-content', color: '#0f0e0c', fontWeight: 500 }}>
+                        {loading ? 'Processando...' : 'Fazer Upload e Enquadrar'}
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelectConfig(e, field.key, field.aspect as number)} disabled={loading} />
+                      </label>
+                    </div>
+                  ) : field.type === 'textarea' ? (
+                    <textarea
+                      value={config[field.key] ?? ''}
+                      onChange={(e) => setConfig((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                      rows={3}
+                      style={inputStyle}
+                    />
+                  ) : (
+                    <input
+                      type={field.type ?? 'text'}
+                      value={config[field.key] ?? ''}
+                      onChange={(e) => setConfig((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                      style={inputStyle}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e5e5e3' }}>
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          style={{
-            background: loading ? '#7a7570' : '#b8965a',
-            color: '#0f0e0c',
-            border: 'none',
-            padding: '.8rem 2rem',
-            borderRadius: '2px',
-            fontSize: '.78rem',
-            fontWeight: 500,
-            letterSpacing: '.08em',
-            textTransform: 'uppercase',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            transition: 'background .2s',
-          }}
-        >
-          {loading ? 'Salvando...' : 'Salvar configurações'}
-        </button>
-      </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e5e5e3' }}>
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            style={{
+              background: loading ? '#7a7570' : '#b8965a',
+              color: '#0f0e0c',
+              border: 'none',
+              padding: '.8rem 2rem',
+              borderRadius: '2px',
+              fontSize: '.78rem',
+              fontWeight: 500,
+              letterSpacing: '.08em',
+              textTransform: 'uppercase',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'background .2s',
+            }}
+          >
+            {loading ? 'Salvando...' : 'Salvar configurações'}
+          </button>
+        </div>
       </div>
 
       <ImageCropper
@@ -184,7 +185,7 @@ export function ConfigForm({ config: initialConfig }: Props) {
         onCancel={() => setCropTarget(null)}
         onConfirm={handleCropConfirm}
       />
-    </div>
+    </>
   )
 }
 
