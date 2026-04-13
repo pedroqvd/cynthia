@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { ImageCropper } from './ImageCropper'
+import { revalidateSite } from '@/app/actions'
 
 interface Props {
   config: Record<string, string>
@@ -80,7 +81,7 @@ export function ConfigForm({ config: initialConfig }: Props) {
     try {
       const formData = new FormData()
       formData.append('file', croppedFile)
-      formData.append('bucket', 'site')
+      formData.append('bucket', 'before_after')
 
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       const { data } = await res.json()
@@ -106,6 +107,7 @@ export function ConfigForm({ config: initialConfig }: Props) {
 
     try {
       await Promise.all(updates)
+      await revalidateSite() // Força o refresh da aba pública do site
       toast.success('Configurações salvas com sucesso!')
     } catch {
       toast.error('Erro ao salvar configurações.')

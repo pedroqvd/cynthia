@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { ImageCropper } from './ImageCropper'
+import { revalidateSite } from '@/app/actions'
 import Image from 'next/image'
 
 interface Post {
@@ -54,7 +55,7 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
     try {
       const form = new FormData()
       form.append('file', croppedFile)
-      form.append('bucket', 'site')
+      form.append('bucket', 'before_after')
 
       const res = await fetch('/api/upload', { method: 'POST', body: form })
       const { data } = await res.json()
@@ -94,6 +95,8 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
         if (error) throw error
         toast.success('Artigo salvo com sucesso!')
       }
+
+      await revalidateSite() // Refresh cache global
 
       router.push('/admin/blog')
       router.refresh()

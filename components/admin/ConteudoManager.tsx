@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import type { BeforeAfter, Testimonial } from '@/lib/supabase/types'
 import { createClient } from '@/lib/supabase/client'
 import { ImageCropper } from './ImageCropper'
+import { revalidateSite } from '@/app/actions'
 
 interface Props {
   beforeAfter: BeforeAfter[]
@@ -56,6 +57,7 @@ export function ConteudoManager({ beforeAfter: initBA, testimonials: initTD }: P
   async function toggleBA(id: string, ativo: boolean) {
     const supabase = createClient()
     await supabase.from('before_after').update({ ativo }).eq('id', id)
+    await revalidateSite()
     setBeforeAfter((prev) => prev.map((b) => b.id === id ? { ...b, ativo } : b))
     toast.success(ativo ? 'Caso ativado' : 'Caso desativado')
   }
@@ -63,6 +65,7 @@ export function ConteudoManager({ beforeAfter: initBA, testimonials: initTD }: P
   async function toggleTestimonial(id: string, ativo: boolean) {
     const supabase = createClient()
     await supabase.from('testimonials').update({ ativo }).eq('id', id)
+    await revalidateSite()
     setTestimonials((prev) => prev.map((t) => t.id === id ? { ...t, ativo } : t))
     toast.success(ativo ? 'Depoimento ativado' : 'Depoimento desativado')
   }
