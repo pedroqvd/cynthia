@@ -10,7 +10,11 @@ export const createImage = (url: string): Promise<HTMLImageElement> =>
     const image = new Image()
     image.addEventListener('load', () => resolve(image))
     image.addEventListener('error', (error) => reject(error))
-    image.setAttribute('crossOrigin', 'anonymous')
+    // Só seta crossOrigin para URLs absolutas (externas/Supabase)
+    // Para URLs relativas (/images/...) não precisa, e evita canvas tainted
+    if (url.startsWith('http')) {
+      image.setAttribute('crossOrigin', 'anonymous')
+    }
     image.src = url
   })
 
@@ -42,7 +46,7 @@ export async function getCroppedImg(
     canvas.toBlob((blob) => {
       if (!blob) return resolve(null)
       resolve(new File([blob], 'cropped.jpg', { type: 'image/jpeg' }))
-    }, 'image/jpeg', 0.95)
+    }, 'image/jpeg', 0.92)
   })
 }
 
