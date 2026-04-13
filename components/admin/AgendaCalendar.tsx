@@ -190,6 +190,20 @@ function EventModal({ event, onClose, onCancel }: { event: CalEvent; onClose: ()
             </a>
           </p>
         )}
+        {resource.lead_id && (
+          <p style={{ fontSize: '.85rem', marginBottom: '.5rem' }}>
+            <a
+              href={`/admin/leads/${resource.lead_id as string}`}
+              style={{ color: '#b8965a', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '.35rem' }}
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.3"/>
+                <path d="M1.5 14c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+              Ver perfil do paciente →
+            </a>
+          </p>
+        )}
         <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.5rem' }}>
           <button onClick={onClose} style={btnSecStyle}>Fechar</button>
           <button onClick={onCancel} style={{ ...btnSecStyle, color: '#ef4444', borderColor: '#ef4444' }}>Cancelar consulta</button>

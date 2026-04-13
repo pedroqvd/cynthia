@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { formatDateTime } from '@/lib/utils'
 import { DashboardCharts } from '@/components/admin/DashboardCharts'
@@ -12,6 +13,7 @@ async function getMetrics() {
   hoje.setHours(0, 0, 0, 0)
   const inicioDaSemana = new Date(hoje)
   inicioDaSemana.setDate(hoje.getDate() - hoje.getDay())
+  const inicioDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
   const trintaDiasAtras = new Date(hoje)
   trintaDiasAtras.setDate(hoje.getDate() - 30)
 
@@ -26,19 +28,24 @@ async function getMetrics() {
   const [
     { count: leadsHoje },
     { count: consultasSemana },
+    { count: consultasMes },
+    { count: totalLeads },
+    { count: leadsFechados },
     { data: proximasConsultas },
     { data: ultimasMensagens },
     { data: leadsRecentes },
-    { data: leadsPorDia },
+    { data: ticketData },
     ...funilCounts
   ] = await Promise.all([
     supabase.from('leads').select('*', { count: 'exact', head: true }).gte('created_at', hoje.toISOString()),
     supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('data_hora', inicioDaSemana.toISOString()).not('status', 'eq', 'cancelado'),
+    supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('data_hora', inicioDoMes.toISOString()).not('status', 'eq', 'cancelado'),
+    supabase.from('leads').select('*', { count: 'exact', head: true }),
+    supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'fechado'),
     supabase.from('appointments').select('id, procedimento, data_hora, leads(nome, whatsapp)').gte('data_hora', hoje.toISOString()).not('status', 'eq', 'cancelado').order('data_hora').limit(5),
     supabase.from('messages').select('id, content, direction, created_at, lead_id, leads(nome)').eq('direction', 'in').order('created_at', { ascending: false }).limit(5),
     supabase.from('leads').select('id, nome, status, created_at, especialidade').order('created_at', { ascending: false }).limit(30),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase.rpc as any)('leads_por_dia', { dias: 30 }).select('*'),
+    supabase.from('leads').select('ticket_estimado').not('ticket_estimado', 'is', null),
     ...FUNIL_STAGES.map(({ status }) =>
       supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', status)
     ),
@@ -49,13 +56,25 @@ async function getMetrics() {
     count: (funilCounts[i] as { count: number | null }).count ?? 0,
   }))
 
+  const tickets = (ticketData ?? []) as { ticket_estimado: number }[]
+  const ticketMedio = tickets.length > 0
+    ? Math.round(tickets.reduce((sum, t) => sum + t.ticket_estimado, 0) / tickets.length)
+    : 0
+
+  const taxaConversao = totalLeads && totalLeads > 0 && leadsFechados
+    ? Math.round((leadsFechados / totalLeads) * 100)
+    : 0
+
   return {
     leadsHoje: leadsHoje ?? 0,
     consultasSemana: consultasSemana ?? 0,
+    consultasMes: consultasMes ?? 0,
+    totalLeads: totalLeads ?? 0,
+    taxaConversao,
+    ticketMedio,
     proximasConsultas: proximasConsultas ?? [],
     ultimasMensagens: ultimasMensagens ?? [],
     leadsRecentes: leadsRecentes ?? [],
-    leadsPorDia: leadsPorDia ?? [],
     funil,
   }
 }
@@ -64,23 +83,89 @@ export default async function DashboardPage() {
   const metrics = await getMetrics()
 
   const cards = [
-    { label: 'Leads novos hoje', value: metrics.leadsHoje, icon: '👤', color: '#b8965a' },
-    { label: 'Consultas esta semana', value: metrics.consultasSemana, icon: '📅', color: '#3b82f6' },
+    { label: 'Leads novos hoje', value: metrics.leadsHoje, icon: '👤', color: '#b8965a', sub: 'entradas hoje' },
+    { label: 'Consultas esta semana', value: metrics.consultasSemana, icon: '📅', color: '#3b82f6', sub: 'a partir de hoje' },
+    { label: 'Consultas este mês', value: metrics.consultasMes, icon: '🗓️', color: '#10b981', sub: 'no mês corrente' },
+    { label: 'Total no pipeline', value: metrics.totalLeads, icon: '📊', color: '#8b5cf6', sub: 'leads ativos' },
+    {
+      label: 'Taxa de conversão',
+      value: `${metrics.taxaConversao}%`,
+      icon: '🎯',
+      color: metrics.taxaConversao >= 20 ? '#10b981' : metrics.taxaConversao >= 10 ? '#f59e0b' : '#ef4444',
+      sub: 'leads → fechados',
+    },
+    {
+      label: 'Ticket médio estimado',
+      value: metrics.ticketMedio > 0 ? `R$\u00a0${metrics.ticketMedio.toLocaleString('pt-BR')}` : '—',
+      icon: '💰',
+      color: '#b8965a',
+      sub: 'média dos leads com ticket',
+    },
   ]
 
   return (
     <div style={{ padding: '2rem' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '.25rem' }}>
-          Dashboard
-        </h1>
-        <p style={{ fontSize: '.85rem', color: '#7a7570' }}>
-          {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
+
+      {/* Cabeçalho com atalhos */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '.25rem' }}>
+            Dashboard
+          </h1>
+          <p style={{ fontSize: '.85rem', color: '#7a7570' }}>
+            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
+          <Link
+            href="/admin/leads"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '.4rem',
+              padding: '.55rem 1.1rem', background: '#0f0e0c', color: '#f5f0e8',
+              borderRadius: '2px', fontSize: '.78rem', fontWeight: 500,
+              textDecoration: 'none', border: 'none',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.3"/>
+              <path d="M1.5 14c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+            Novo lead
+          </Link>
+          <Link
+            href="/admin/agenda"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '.4rem',
+              padding: '.55rem 1.1rem', background: 'transparent', color: '#0f0e0c',
+              border: '1px solid #e5e5e3', borderRadius: '2px', fontSize: '.78rem',
+              fontWeight: 500, textDecoration: 'none',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="2.5" width="14" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+              <path d="M4.5 1v3M11.5 1v3M1 6.5h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+            Nova consulta
+          </Link>
+          <Link
+            href="/admin/blog/novo"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '.4rem',
+              padding: '.55rem 1.1rem', background: 'transparent', color: '#0f0e0c',
+              border: '1px solid #e5e5e3', borderRadius: '2px', fontSize: '.78rem',
+              fontWeight: 500, textDecoration: 'none',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1v14M1 8h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            Novo artigo
+          </Link>
+        </div>
       </div>
 
       {/* Cards de métricas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         {cards.map((card) => (
           <div
             key={card.label}
@@ -88,33 +173,17 @@ export default async function DashboardPage() {
               background: '#fff',
               border: '1px solid #e5e5e3',
               borderRadius: '4px',
-              padding: '1.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
+              padding: '1.25rem',
             }}
           >
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '8px',
-                background: `${card.color}15`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.5rem',
-                flexShrink: 0,
-              }}
-            >
-              {card.icon}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem' }}>
+              <span style={{ fontSize: '.72rem', color: '#7a7570' }}>{card.label}</span>
+              <span style={{ fontSize: '1.1rem' }}>{card.icon}</span>
             </div>
-            <div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 600, color: '#0f0e0c', lineHeight: 1 }}>
-                {card.value}
-              </div>
-              <div style={{ fontSize: '.78rem', color: '#7a7570', marginTop: '.25rem' }}>{card.label}</div>
+            <div style={{ fontSize: '1.7rem', fontWeight: 600, color: card.color, lineHeight: 1 }}>
+              {card.value}
             </div>
+            <div style={{ fontSize: '.68rem', color: '#7a7570', marginTop: '.4rem' }}>{card.sub}</div>
           </div>
         ))}
       </div>
@@ -124,11 +193,13 @@ export default async function DashboardPage() {
 
       {/* Grid inferior */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+
         {/* Próximas consultas */}
         <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.5rem' }}>
-          <h2 style={{ fontSize: '.9rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '1rem' }}>
-            Próximas consultas
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <h2 style={{ fontSize: '.9rem', fontWeight: 500, color: '#0f0e0c' }}>Próximas consultas</h2>
+            <Link href="/admin/agenda" style={{ fontSize: '.72rem', color: '#b8965a', textDecoration: 'none' }}>Ver agenda →</Link>
+          </div>
           {metrics.proximasConsultas.length === 0 ? (
             <p style={{ fontSize: '.82rem', color: '#7a7570' }}>Nenhuma consulta agendada.</p>
           ) : (
@@ -166,9 +237,10 @@ export default async function DashboardPage() {
 
         {/* Últimas mensagens */}
         <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.5rem' }}>
-          <h2 style={{ fontSize: '.9rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '1rem' }}>
-            Mensagens recentes
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <h2 style={{ fontSize: '.9rem', fontWeight: 500, color: '#0f0e0c' }}>Mensagens recentes</h2>
+            <Link href="/admin/whatsapp" style={{ fontSize: '.72rem', color: '#b8965a', textDecoration: 'none' }}>Ver inbox →</Link>
+          </div>
           {metrics.ultimasMensagens.length === 0 ? (
             <p style={{ fontSize: '.82rem', color: '#7a7570' }}>Nenhuma mensagem recebida.</p>
           ) : (

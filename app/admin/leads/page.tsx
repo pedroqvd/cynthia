@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { LeadsKanban } from '@/components/admin/LeadsKanban'
+import { LeadsViewToggle } from '@/components/admin/LeadsViewToggle'
 
 export const metadata: Metadata = { title: 'Leads / CRM' }
 export const dynamic = 'force-dynamic'
@@ -17,7 +18,7 @@ async function getLeads() {
   const supabase = createClient()
   const { data } = await supabase
     .from('leads')
-    .select('id, nome, whatsapp, especialidade, urgencia, origem, status, ticket_estimado, created_at, last_seen')
+    .select('id, nome, whatsapp, email, especialidade, urgencia, origem, status, ticket_estimado, observacoes, created_at, updated_at, last_seen')
     .order('created_at', { ascending: false })
     .limit(200)
 
@@ -27,37 +28,16 @@ async function getLeads() {
 export default async function LeadsPage() {
   const leads = await getLeads()
 
-  // Agrupa por status
   const byStatus = COLUNAS.reduce<Record<string, typeof leads>>((acc, col) => {
     acc[col.id] = leads.filter((l) => l.status === col.id)
     return acc
   }, {})
 
   return (
-    <div style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 500, color: '#0f0e0c' }}>Leads / CRM</h1>
-          <p style={{ fontSize: '.85rem', color: '#7a7570' }}>{leads.length} leads no total</p>
-        </div>
-        <a
-          href="/api/leads?format=csv"
-          style={{
-            fontSize: '.75rem',
-            letterSpacing: '.08em',
-            textTransform: 'uppercase',
-            color: '#7a7570',
-            border: '1px solid #e5e5e3',
-            padding: '.5rem 1rem',
-            borderRadius: '2px',
-            textDecoration: 'none',
-          }}
-        >
-          Exportar CSV
-        </a>
-      </div>
-
-      <LeadsKanban colunas={COLUNAS} byStatus={byStatus} />
-    </div>
+    <LeadsViewToggle
+      leads={leads}
+      colunas={COLUNAS}
+      byStatus={byStatus}
+    />
   )
 }
