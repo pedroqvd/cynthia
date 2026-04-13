@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { formatDateTime } from '@/lib/utils'
 import type { Lead, Message } from '@/lib/supabase/types'
+import { useIsMobile } from '@/lib/hooks/useIsMobile'
 
 interface Conversation extends Lead {
   messages: Message[]
@@ -28,6 +29,9 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
+  const [suggesting, setSuggesting] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(true)
+  const isMobile = useIsMobile()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const selectedConv = conversations.find((c) => c.id === selectedId)
@@ -62,6 +66,7 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
 
   async function handleSelectConv(conv: Conversation) {
     setSelectedId(conv.id)
+    if (isMobile) setShowSidebar(false)
     // Carrega mensagens do lead
     const supabase = createClient()
     const { data } = await supabase
@@ -72,6 +77,28 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
       .limit(100)
 
     setMessages(data ?? [])
+  }
+
+  async function handleSuggestAI() {
+    if (!selectedId || suggesting) return
+    setSuggesting(true)
+    try {
+      const res = await fetch('/api/ai/suggest-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: selectedId }),
+      })
+      const data = await res.json() as { suggestion?: string; error?: string }
+      if (!res.ok || !data.suggestion) {
+        toast.error(data.error ?? 'Erro ao gerar sugestão.')
+        return
+      }
+      setText(data.suggestion)
+    } catch {
+      toast.error('Erro ao conectar com IA.')
+    } finally {
+      setSuggesting(false)
+    }
   }
 
   async function handleSend(e: React.FormEvent) {
@@ -100,9 +127,9 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
       {/* Lista de conversas */}
       <div
         style={{
-          width: '300px',
+          width: isMobile ? '100%' : '300px',
           borderRight: '1px solid #e5e5e3',
-          display: 'flex',
+          display: isMobile && !showSidebar ? 'none' : 'flex',
           flexDirection: 'column',
           background: '#fff',
           flexShrink: 0,
@@ -185,7 +212,7 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
       </div>
 
       {/* Chat */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#fafaf9', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: isMobile && showSidebar ? 'none' : 'flex', flexDirection: 'column', background: '#fafaf9', overflow: 'hidden' }}>
         {selectedConv ? (
           <>
             {/* Header do chat */}
@@ -199,6 +226,17 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
                 gap: '1rem',
               }}
             >
+              {isMobile && (
+                <button
+                  onClick={() => setShowSidebar(true)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7a7570', padding: '4px', display: 'flex', flexShrink: 0 }}
+                  aria-label="Voltar"
+                >
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M11 4L5 9l6 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              )}
               <div>
                 <div style={{ fontSize: '.95rem', fontWeight: 500, color: '#0f0e0c' }}>{selectedConv.nome}</div>
                 <div style={{ fontSize: '.72rem', color: '#7a7570' }}>{selectedConv.whatsapp}</div>
@@ -287,6 +325,20 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
               )}
 
               <form onSubmit={handleSend} style={{ display: 'flex', gap: '.75rem', alignItems: 'flex-end' }}>
+                {/* Botão IA */}
+                <button
+                  type="button"
+                  onClick={handleSuggestAI}
+                  disabled={suggesting}
+                  style={{ background: suggesting ? '#f3f4f6' : 'none', border: suggesting ? '1px solid #e5e5e3' : 'none', cursor: suggesting ? 'wait' : 'pointer', color: '#8b5cf6', padding: '6px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '.7rem' }}
+                  title="Sugerir resposta com IA"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5L12 2z"/>
+                  </svg>
+                  {suggesting ? 'IA...' : 'IA'}
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setShowTemplates(!showTemplates)}

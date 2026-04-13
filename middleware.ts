@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-/** Protege todas as rotas /admin/* exceto /admin/login */
+/**
+ * Protege todas as rotas /admin/* exceto /admin/login e /admin/reset-password.
+ *
+ * IMPORTANTE: usa getSession() (não getUser()) para a decisão de redirecionamento.
+ * getSession() valida o JWT localmente via assinatura — sem chamada de rede.
+ * getUser() faz uma chamada à API do Supabase e pode falhar no Edge Runtime
+ * causando o loop de redirecionamento mesmo com sessão válida.
+ * Use getUser() dentro das Server Components/Route Handlers para validação segura.
+ */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -15,48 +23,48 @@ export async function middleware(request: NextRequest) {
   }
 
   // Rotas admin: requer autenticação
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login') && !pathname.startsWith('/admin/reset-password')) {
+  if (
+    pathname.startsWith('/admin') &&
+    !pathname.startsWith('/admin/login') &&
+    !pathname.startsWith('/admin/reset-password')
+  ) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    // Se variáveis não configuradas, redireciona para login
     if (!supabaseUrl || !supabaseKey) {
-      const loginUrl = new URL('/admin/login', request.url)
-      return NextResponse.redirect(loginUrl)
+      console.error('[middleware] Variáveis SUPABASE não configuradas')
+      return NextResponse.redirect(new URL('/admin/login', request.url))
     }
 
-    try {
-      let response = NextResponse.next({ request })
+    // Padrão canônico Supabase SSR — não inserir código entre createServerClient e getSession()
+    let supabaseResponse = NextResponse.next({ request })
 
-      const supabase = createServerClient(supabaseUrl, supabaseKey, {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-            response = NextResponse.next({ request })
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            )
-          },
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
         },
-      })
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    })
 
-      const { data: { user } } = await supabase.auth.getUser()
+    // getSession() verifica a sessão via assinatura JWT local — não faz chamada de rede.
+    // É o método correto para decisões de redirecionamento no middleware.
+    const { data: { session } } = await supabase.auth.getSession()
 
-      if (!user) {
-        const loginUrl = new URL('/admin/login', request.url)
-        loginUrl.searchParams.set('redirect', pathname)
-        return NextResponse.redirect(loginUrl)
-      }
-
-      return response
-    } catch {
-      // Em caso de erro inesperado, redireciona para login
+    if (!session) {
       const loginUrl = new URL('/admin/login', request.url)
+      loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
     }
+
+    return supabaseResponse
   }
 
   return NextResponse.next()

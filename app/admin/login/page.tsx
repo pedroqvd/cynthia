@@ -1,10 +1,10 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Toaster } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -17,6 +17,12 @@ function LoginForm() {
   const params = useSearchParams()
   const redirect = params.get('redirect') ?? '/admin/dashboard'
 
+  useEffect(() => {
+    if (params.get('error') === 'link_invalido') {
+      toast.error('Link de redefinição inválido ou expirado. Solicite um novo.')
+    }
+  }, [params])
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -26,12 +32,13 @@ function LoginForm() {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
 
       if (error) {
-        toast.error('Credenciais inválidas. Tente novamente.')
+        toast.error('Credenciais inválidas. Verifique e-mail e senha.')
         setLoading(false)
         return
       }
 
-      // Hard navigation para garantir que o middleware revalide a sessão
+      // Hard redirect: o browser envia os cookies de sessão recém-criados
+      // e o middleware os lê via getSession() (sem chamada de rede).
       window.location.href = redirect
     } catch {
       toast.error('Erro ao conectar. Tente novamente.')
@@ -44,18 +51,13 @@ function LoginForm() {
     setForgotLoading(true)
 
     try {
-      const redirectTo = `${window.location.origin}/admin/reset-password`
-      const res = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail, redirectTo }),
+      const supabase = createClient()
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/admin/reset-password`,
       })
 
-      let data: { error?: string; success?: boolean } = {}
-      try { data = await res.json() } catch { /* body vazio */ }
-
-      if (!res.ok) {
-        toast.error(data.error ?? 'Erro ao enviar e-mail. Tente novamente.')
+      if (error) {
+        toast.error('Erro ao enviar e-mail. Tente novamente.')
       } else {
         toast.success('Link enviado! Verifique sua caixa de entrada.')
         setForgotEmail('')

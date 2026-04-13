@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Toaster } from 'sonner'
@@ -13,28 +13,20 @@ function ResetPasswordForm() {
   const [loading, setLoading] = useState(false)
   const [exchanging, setExchanging] = useState(true)
   const [valid, setValid] = useState(false)
-  const params = useSearchParams()
   const router = useRouter()
-  const code = params.get('code')
 
-  // Troca o código da URL por uma sessão válida
+  // A sessão já foi estabelecida pelo /auth/callback — só verifica se existe
   useEffect(() => {
-    if (!code) {
-      setExchanging(false)
-      return
-    }
-
     const supabase = createClient()
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        toast.error('Link inválido ou expirado. Solicite um novo.')
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error || !data.session) {
         setValid(false)
       } else {
         setValid(true)
       }
       setExchanging(false)
     })
-  }, [code])
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

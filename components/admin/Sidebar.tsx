@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -93,6 +93,16 @@ export function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
 
+  // Auto-collapse on mobile viewports
+  useEffect(() => {
+    function check() {
+      if (window.innerWidth < 640) setCollapsed(true)
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const isLoginPage = pathname === '/admin/login'
 
   async function handleLogout() {
@@ -181,6 +191,44 @@ export function AdminSidebar() {
           )
         })}
       </nav>
+
+      {/* Busca global */}
+      {!isLoginPage && (
+        <div style={{ padding: '0 .75rem .5rem' }}>
+          <button
+            onClick={() => {
+              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true }))
+            }}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: collapsed ? '8px 0' : '8px 12px',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(184,150,90,0.12)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              color: '#7a7570',
+              fontSize: '.72rem',
+              letterSpacing: '.04em',
+            }}
+            title="Busca global (⌘K)"
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M11 11l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            {!collapsed && (
+              <>
+                <span style={{ flex: 1 }}>Buscar...</span>
+                <kbd style={{ fontSize: '.6rem', background: 'rgba(255,255,255,0.08)', padding: '1px 4px', borderRadius: '2px' }}>⌘K</kbd>
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Logout */}
       <div style={{ padding: '1rem', borderTop: '1px solid rgba(184,150,90,0.15)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>

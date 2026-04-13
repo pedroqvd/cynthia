@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -41,13 +41,34 @@ interface Props {
   leads: Lead[]
 }
 
+const STORAGE_KEY = 'agenda_prefs'
+
+function loadPrefs(): { view: View } {
+  if (typeof window === 'undefined') return { view: 'week' }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return { view: 'week' }
+    return JSON.parse(raw) as { view: View }
+  } catch {
+    return { view: 'week' }
+  }
+}
+
 export function AgendaCalendar({ events: initialEvents, leads }: Props) {
   const [events, setEvents] = useState(initialEvents)
-  const [view, setView] = useState<View>('week')
+  const prefs = loadPrefs()
+  const [view, setView] = useState<View>(prefs.view)
   const [date, setDate] = useState(new Date())
   const [selected, setSelected] = useState<CalEvent | null>(null)
   const [showNewModal, setShowNewModal] = useState(false)
   const [newSlot, setNewSlot] = useState<{ start: Date; end: Date } | null>(null)
+
+  // Persiste preferências de visualização no localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ view }))
+    } catch { /* privado/incognito */ }
+  }, [view])
 
   const handleSelectEvent = useCallback((event: CalEvent) => {
     setSelected(event)
