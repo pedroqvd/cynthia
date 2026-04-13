@@ -23,7 +23,8 @@ function maxDate() {
   return toYMD(d)
 }
 
-export function Agendamento() {
+export function Agendamento({ imgUrl }: { imgUrl?: string }) {
+  const src = imgUrl || '/images/cynthia-cta.jpg'
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [selectedDate, setSelectedDate] = useState('')
@@ -138,7 +139,7 @@ export function Agendamento() {
         >
           {/* Foto da Dra. Cynthia — blusa tiffany, fundo preto */}
           <Image
-            src="/images/cynthia-cta.jpg"
+            src={src}
             alt="Dra. Cynthia Quevedo"
             fill
             sizes="50vw"

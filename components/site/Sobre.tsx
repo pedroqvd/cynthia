@@ -10,7 +10,8 @@ const CREDENTIALS = [
   'Membro da Sociedade Brasileira de Cirurgia Bucomaxilofacial',
 ]
 
-export function Sobre() {
+export function Sobre({ imgUrl }: { imgUrl?: string }) {
+  const src = imgUrl || '/images/cynthia-sobre.jpg'
   const { ref: refVisual } = useReveal()
   const { ref: refContent } = useReveal()
 
@@ -54,7 +55,7 @@ export function Sobre() {
         >
           {/* Foto da Dra. Cynthia — sentada, blusa azul */}
           <Image
-            src="/images/cynthia-sobre.jpg"
+            src={src}
             alt="Dra. Cynthia Quevedo — Cirurgiã-Dentista em Brasília"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"

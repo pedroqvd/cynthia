@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { ImageCropper } from './ImageCropper'
 
 interface Props {
   config: Record<string, string>
@@ -42,11 +43,52 @@ const SECTIONS = [
       { key: 'msg_ausencia', label: 'Mensagem fora do horário (deixe vazio para usar o padrão)', type: 'textarea' },
     ],
   },
+  {
+    title: 'Imagens Principais do Site',
+    fields: [
+      { key: 'img_hero', label: 'Foto Principal (Início do site) - 3:4', type: 'image', aspect: 3/4 },
+      { key: 'img_sobre', label: 'Foto Seção Sobre - 3:4', type: 'image', aspect: 3/4 },
+      { key: 'img_cta', label: 'Foto Agendamento (CTA) - 4:5', type: 'image', aspect: 4/5 },
+    ],
+  },
 ]
 
 export function ConfigForm({ config: initialConfig }: Props) {
   const [config, setConfig] = useState(initialConfig)
   const [loading, setLoading] = useState(false)
+  const [cropTarget, setCropTarget] = useState<{ file: File, key: string, aspect: number } | null>(null)
+
+  function handleFileSelectConfig(e: React.ChangeEvent<HTMLInputElement>, key: string, aspect: number) {
+    const file = e.target.files?.[0]
+    if (file) {
+      setCropTarget({ file, key, aspect })
+    }
+    e.target.value = ''
+  }
+
+  async function handleCropConfirm(croppedFile: File) {
+    if (!cropTarget) return
+    const { key } = cropTarget
+    setCropTarget(null)
+    setLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', croppedFile)
+      formData.append('bucket', 'site')
+
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const { data } = await res.json()
+
+      if (!res.ok) throw new Error(data?.error)
+
+      setConfig((prev) => ({ ...prev, [key]: data.url }))
+      toast.success('Imagem pronta! Salve as configurações.')
+    } catch (err) {
+      toast.error('Erro ao enviar imagem.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleSave() {
     setLoading(true)
@@ -79,7 +121,20 @@ export function ConfigForm({ config: initialConfig }: Props) {
                 <label style={{ display: 'block', fontSize: '.75rem', letterSpacing: '.08em', color: '#7a7570', marginBottom: '.4rem' }}>
                   {field.label}
                 </label>
-                {field.type === 'textarea' ? (
+                {field.type === 'image' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', marginBottom: '.5rem' }}>
+                    {config[field.key] && (
+                      <div style={{ width: '140px', aspectRatio: field.aspect as number, borderRadius: '4px', overflow: 'hidden', border: '1px solid #e5e5e3' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={config[field.key]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                    <label style={{ display: 'inline-block', padding: '.5rem .8rem', background: '#f5f5f5', border: '1px solid #e5e5e3', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '.75rem', width: 'max-content', color: '#0f0e0c', fontWeight: 500 }}>
+                      {loading ? 'Processando...' : 'Fazer Upload e Enquadrar'}
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelectConfig(e, field.key, field.aspect as number)} disabled={loading} />
+                    </label>
+                  </div>
+                ) : field.type === 'textarea' ? (
                   <textarea
                     value={config[field.key] ?? ''}
                     onChange={(e) => setConfig((prev) => ({ ...prev, [field.key]: e.target.value }))}
@@ -121,6 +176,14 @@ export function ConfigForm({ config: initialConfig }: Props) {
           {loading ? 'Salvando...' : 'Salvar configurações'}
         </button>
       </div>
+      </div>
+
+      <ImageCropper
+        imageFile={cropTarget?.file || null}
+        aspectRatio={cropTarget?.aspect || 1}
+        onCancel={() => setCropTarget(null)}
+        onConfirm={handleCropConfirm}
+      />
     </div>
   )
 }

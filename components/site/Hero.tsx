@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 
-export function Hero() {
+export function Hero({ imgUrl }: { imgUrl?: string }) {
+  const src = imgUrl || '/images/cynthia-hero.jpg'
   return (
     <section
       id="hero"
@@ -228,7 +229,7 @@ export function Hero() {
         >
           {/* Foto da Dra. Cynthia — jaleco branco, fundo rosa */}
           <Image
-            src="/images/cynthia-hero.jpg"
+            src={src}
             alt="Dra. Cynthia Quevedo — Especialista em Estética Dental, Cirurgia e Prótese"
             fill
             sizes="50vw"
