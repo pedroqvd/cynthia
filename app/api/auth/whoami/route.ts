@@ -22,11 +22,14 @@ export async function GET(req: NextRequest) {
 
   const { data: { user }, error } = await supabase.auth.getUser()
 
+  // Não expõe dados se não autenticado
+  if (!user) {
+    return NextResponse.json({ authenticated: false }, { status: 401 })
+  }
+
   return NextResponse.json({
-    authenticated: !!user,
-    user: user ? { id: user.id, email: user.email } : null,
-    error: error?.message ?? null,
-    cookieNames,
+    authenticated: true,
+    user: { id: user.id, email: user.email },
     supabaseCookies: cookieNames.filter((n) => n.startsWith('sb-')),
   })
 }

@@ -25,16 +25,12 @@ export async function POST(req: NextRequest) {
         return req.cookies.getAll()
       },
       setAll(cookiesToSet) {
-        // Escreve cada cookie de sessão no header Set-Cookie da resposta
+        // Usa as opções padrão do Supabase (sem httpOnly) para que o browser client
+        // também consiga ler os cookies (necessário para logout, reset-password, callback)
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, {
             ...options,
-            // Garante que os cookies são enviados em todas as rotas
-            path: '/',
-            // httpOnly impede acesso via JS (mais seguro)
-            httpOnly: true,
-            // sameSite lax é o padrão adequado para SPAs
-            sameSite: 'lax',
+            path: '/',  // garante que os cookies são enviados em todas as rotas
           })
         })
       },
