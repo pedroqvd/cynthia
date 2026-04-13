@@ -4,11 +4,9 @@ import { createServerClient } from '@supabase/ssr'
 /**
  * Protege todas as rotas /admin/* exceto /admin/login e /admin/reset-password.
  *
- * IMPORTANTE: usa getSession() (não getUser()) para a decisão de redirecionamento.
- * getSession() valida o JWT localmente via assinatura — sem chamada de rede.
- * getUser() faz uma chamada à API do Supabase e pode falhar no Edge Runtime
- * causando o loop de redirecionamento mesmo com sessão válida.
- * Use getUser() dentro das Server Components/Route Handlers para validação segura.
+ * IMPORTANTE: usa getUser() para validar o JWT diretamente no servidor Supabase.
+ * Isso é mais seguro e resistente a expiração prematura de sessão após deploys.
+ * getUser() renova o token automaticamente se o refresh token ainda for válido.
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -54,11 +52,11 @@ export async function middleware(request: NextRequest) {
       },
     })
 
-    // getSession() verifica a sessão via assinatura JWT local — não faz chamada de rede.
-    // É o método correto para decisões de redirecionamento no middleware.
-    const { data: { session } } = await supabase.auth.getSession()
+    // getUser() valida o JWT diretamente na API do Supabase (mais seguro e resiliente que getSession).
+    // Evita expiração de sessão prematura após novos deploys.
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (!user) {
       const loginUrl = new URL('/admin/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
