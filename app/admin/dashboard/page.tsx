@@ -64,8 +64,31 @@ export default async function DashboardPage() {
   const metrics = await getMetrics()
 
   const cards = [
-    { label: 'Leads novos hoje', value: metrics.leadsHoje, icon: '👤', color: '#b8965a' },
-    { label: 'Consultas esta semana', value: metrics.consultasSemana, icon: '📅', color: '#3b82f6' },
+    {
+      label: 'Leads novos hoje',
+      value: metrics.leadsHoje,
+      color: '#b8965a',
+      icon: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" fill="#b8965a"/>
+          <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="#b8965a" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+    {
+      label: 'Consultas esta semana',
+      value: metrics.consultasSemana,
+      color: '#3b82f6',
+      icon: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="17" rx="2" fill="#3b82f615" stroke="#3b82f6" strokeWidth="1.5"/>
+          <path d="M8 2v4M16 2v4M3 10h18" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round"/>
+          <rect x="7" y="14" width="3" height="3" rx=".5" fill="#3b82f6"/>
+          <rect x="11" y="14" width="3" height="3" rx=".5" fill="#3b82f660"/>
+          <rect x="15" y="14" width="3" height="3" rx=".5" fill="#3b82f630"/>
+        </svg>
+      ),
+    },
   ]
 
   return (
