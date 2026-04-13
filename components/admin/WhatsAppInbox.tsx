@@ -28,6 +28,7 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
+  const [suggesting, setSuggesting] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const selectedConv = conversations.find((c) => c.id === selectedId)
@@ -72,6 +73,28 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
       .limit(100)
 
     setMessages(data ?? [])
+  }
+
+  async function handleSuggestAI() {
+    if (!selectedId || suggesting) return
+    setSuggesting(true)
+    try {
+      const res = await fetch('/api/ai/suggest-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: selectedId }),
+      })
+      const data = await res.json() as { suggestion?: string; error?: string }
+      if (!res.ok || !data.suggestion) {
+        toast.error(data.error ?? 'Erro ao gerar sugestão.')
+        return
+      }
+      setText(data.suggestion)
+    } catch {
+      toast.error('Erro ao conectar com IA.')
+    } finally {
+      setSuggesting(false)
+    }
   }
 
   async function handleSend(e: React.FormEvent) {
@@ -287,6 +310,20 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
               )}
 
               <form onSubmit={handleSend} style={{ display: 'flex', gap: '.75rem', alignItems: 'flex-end' }}>
+                {/* Botão IA */}
+                <button
+                  type="button"
+                  onClick={handleSuggestAI}
+                  disabled={suggesting}
+                  style={{ background: suggesting ? '#f3f4f6' : 'none', border: suggesting ? '1px solid #e5e5e3' : 'none', cursor: suggesting ? 'wait' : 'pointer', color: '#8b5cf6', padding: '6px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '.7rem' }}
+                  title="Sugerir resposta com IA"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5L12 2z"/>
+                  </svg>
+                  {suggesting ? 'IA...' : 'IA'}
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setShowTemplates(!showTemplates)}

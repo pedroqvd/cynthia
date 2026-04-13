@@ -20,9 +20,49 @@ export async function GET(request: NextRequest) {
   }
 
   const url = request.nextUrl
+  const format = url.searchParams.get('format')
   const status = url.searchParams.get('status')
   const search = url.searchParams.get('q')
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50'), 100)
+
+  // Export CSV — sem paginação, retorna todos
+  if (format === 'csv') {
+    const { data: allLeads, error } = await supabase
+      .from('leads')
+      .select('id, nome, whatsapp, email, especialidade, urgencia, origem, status, ticket_estimado, observacoes, created_at, last_seen')
+      .order('created_at', { ascending: false })
+      .limit(5000)
+
+    if (error) return apiError(error.message, 500)
+
+    const headers = ['ID', 'Nome', 'WhatsApp', 'Email', 'Especialidade', 'Urgência', 'Origem', 'Status', 'Ticket (R$)', 'Observações', 'Criado em', 'Último contato']
+    const rows = (allLeads ?? []).map((l) => [
+      l.id,
+      l.nome,
+      l.whatsapp,
+      l.email ?? '',
+      l.especialidade ?? '',
+      l.urgencia ?? '',
+      l.origem ?? '',
+      l.status,
+      l.ticket_estimado ?? '',
+      (l.observacoes ?? '').replace(/"/g, '""'),
+      l.created_at ? new Date(l.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '',
+      l.last_seen ? new Date(l.last_seen).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '',
+    ])
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${cell}"`).join(','))
+      .join('\r\n')
+
+    const today = new Date().toISOString().slice(0, 10)
+    return new Response('\uFEFF' + csv, {  // BOM para Excel reconhecer UTF-8
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="leads-${today}.csv"`,
+      },
+    })
+  }
 
   let query = supabase
     .from('leads')

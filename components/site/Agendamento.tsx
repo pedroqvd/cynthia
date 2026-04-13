@@ -1,15 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { agendamentoSchema, type AgendamentoInput } from '@/lib/schemas'
 
+function toYMD(d: Date) {
+  return d.toISOString().slice(0, 10)
+}
+
+function minDate() {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return toYMD(d)
+}
+
+function maxDate() {
+  const d = new Date()
+  d.setDate(d.getDate() + 60)
+  return toYMD(d)
+}
+
 export function Agendamento() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [selectedDate, setSelectedDate] = useState('')
+  const [slots, setSlots] = useState<string[]>([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [selectedSlot, setSelectedSlot] = useState('')
 
   const {
     register,
@@ -21,13 +41,31 @@ export function Agendamento() {
     defaultValues: { urgencia: 'media' },
   })
 
+  // Busca horários disponíveis quando o usuário escolhe uma data
+  useEffect(() => {
+    if (!selectedDate) { setSlots([]); return }
+    setLoadingSlots(true)
+    setSelectedSlot('')
+    fetch(`/api/calendar/availability?date=${selectedDate}`)
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((json: { data?: string[] }) => setSlots(json.data ?? []))
+      .catch(() => setSlots([]))
+      .finally(() => setLoadingSlots(false))
+  }, [selectedDate])
+
   async function onSubmit(data: AgendamentoInput) {
     setLoading(true)
     try {
-      const res = await fetch('/api/leads', {
+      // Se selecionou horário → cria lead + agendamento no calendar
+      const endpoint = selectedSlot ? '/api/booking' : '/api/leads'
+      const payload = selectedSlot
+        ? { ...data, origem: 'site', data_hora: selectedSlot }
+        : { ...data, origem: 'site' }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, origem: 'site' }),
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
@@ -37,7 +75,11 @@ export function Agendamento() {
 
       setSuccess(true)
       reset()
-      toast.success('Recebemos seu contato! Entraremos em breve pelo WhatsApp.')
+      toast.success(
+        selectedSlot
+          ? 'Consulta agendada! Você receberá confirmação pelo WhatsApp.'
+          : 'Recebemos seu contato! Entraremos em breve pelo WhatsApp.'
+      )
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao enviar. Tente pelo WhatsApp.')
     } finally {
@@ -170,6 +212,59 @@ export function Agendamento() {
                 style={{ ...inputStyle, resize: 'none' }}
               />
             </FormField>
+
+            {/* Seletor de horário (opcional) */}
+            <div style={{ borderTop: '1px solid rgba(201,169,110,0.2)', paddingTop: '1.25rem', marginTop: '.25rem' }}>
+              <p style={{ fontSize: '.75rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(245,240,230,0.45)', marginBottom: '.9rem' }}>
+                Horário preferido <span style={{ opacity: .6 }}>(opcional)</span>
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.9rem' }} className="max-md:!grid-cols-1">
+                <FormField label="Data">
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    min={minDate()}
+                    max={maxDate()}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    style={{ ...inputStyle, colorScheme: 'dark' }}
+                  />
+                </FormField>
+                <FormField label="Horário disponível">
+                  {loadingSlots ? (
+                    <div style={{ ...inputStyle, color: 'rgba(245,240,230,0.4)', display: 'flex', alignItems: 'center' }}>
+                      Carregando horários...
+                    </div>
+                  ) : !selectedDate ? (
+                    <div style={{ ...inputStyle, color: 'rgba(245,240,230,0.3)', display: 'flex', alignItems: 'center' }}>
+                      Selecione uma data
+                    </div>
+                  ) : slots.length === 0 ? (
+                    <div style={{ ...inputStyle, color: 'rgba(245,240,230,0.4)', display: 'flex', alignItems: 'center' }}>
+                      Sem horários disponíveis
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedSlot}
+                      onChange={(e) => setSelectedSlot(e.target.value)}
+                      style={inputStyle}
+                    >
+                      <option value="">Escolha um horário...</option>
+                      {slots.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {new Date(slot).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </FormField>
+              </div>
+              {selectedSlot && (
+                <p style={{ fontSize: '.75rem', color: '#10b981', marginTop: '.5rem' }}>
+                  Horário selecionado:{' '}
+                  {new Date(selectedSlot).toLocaleString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
+                </p>
+              )}
+            </div>
 
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: '.75rem', cursor: 'pointer' }}>
               <input

@@ -15,6 +15,14 @@ async function getMetrics() {
   const trintaDiasAtras = new Date(hoje)
   trintaDiasAtras.setDate(hoje.getDate() - 30)
 
+  const FUNIL_STAGES = [
+    { status: 'novo',       label: 'Novos leads',      color: '#b8965a' },
+    { status: 'em_contato', label: 'Em contato',        color: '#3b82f6' },
+    { status: 'agendado',   label: 'Agendados',         color: '#10b981' },
+    { status: 'proposta',   label: 'Proposta enviada',  color: '#8b5cf6' },
+    { status: 'fechado',    label: 'Fechados',          color: '#6b7280' },
+  ]
+
   const [
     { count: leadsHoje },
     { count: consultasSemana },
@@ -22,6 +30,7 @@ async function getMetrics() {
     { data: ultimasMensagens },
     { data: leadsRecentes },
     { data: leadsPorDia },
+    ...funilCounts
   ] = await Promise.all([
     supabase.from('leads').select('*', { count: 'exact', head: true }).gte('created_at', hoje.toISOString()),
     supabase.from('appointments').select('*', { count: 'exact', head: true }).gte('data_hora', inicioDaSemana.toISOString()).not('status', 'eq', 'cancelado'),
@@ -30,7 +39,15 @@ async function getMetrics() {
     supabase.from('leads').select('id, nome, status, created_at, especialidade').order('created_at', { ascending: false }).limit(30),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase.rpc as any)('leads_por_dia', { dias: 30 }).select('*'),
+    ...FUNIL_STAGES.map(({ status }) =>
+      supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', status)
+    ),
   ])
+
+  const funil = FUNIL_STAGES.map((stage, i) => ({
+    ...stage,
+    count: (funilCounts[i] as { count: number | null }).count ?? 0,
+  }))
 
   return {
     leadsHoje: leadsHoje ?? 0,
@@ -39,6 +56,7 @@ async function getMetrics() {
     ultimasMensagens: ultimasMensagens ?? [],
     leadsRecentes: leadsRecentes ?? [],
     leadsPorDia: leadsPorDia ?? [],
+    funil,
   }
 }
 
@@ -102,7 +120,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Gráficos */}
-      <DashboardCharts leadsRecentes={metrics.leadsRecentes} />
+      <DashboardCharts leadsRecentes={metrics.leadsRecentes} funil={metrics.funil} />
 
       {/* Grid inferior */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1.5rem' }}>

@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { Toaster } from 'sonner'
 import { AdminSidebar } from '@/components/admin/Sidebar'
+import { NewLeadNotifier } from '@/components/admin/NewLeadNotifier'
+import { AdminTitleBadge } from '@/components/admin/AdminTitleBadge'
+import { GlobalSearch } from '@/components/admin/GlobalSearch'
 
 export const metadata: Metadata = {
   title: { default: 'Painel — Dra. Cynthia', template: '%s | Painel' },
@@ -15,6 +18,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </main>
       <Toaster richColors position="top-right" />
+      <NewLeadNotifier />
+      <AdminTitleBadge />
+      <GlobalSearch />
     </div>
   )
 }
