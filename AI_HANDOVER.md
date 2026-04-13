@@ -1,6 +1,6 @@
 # AI Context / Developer Handover — Dra. Cynthia
 
-Atualizado em: **Abril 2026**. Leia tudo antes de tocar em qualquer arquivo.
+Atualizado em: **Abril 2026**. Leia **tudo** antes de tocar em qualquer arquivo.
 
 ---
 
@@ -11,7 +11,7 @@ App Next.js 14 (App Router) para clínica odontológica em Brasília-DF. Duas á
 - **Site público** (`/`) — captação de leads, agendamento online, blog
 - **Painel admin** (`/admin/*`) — CRM, agenda, WhatsApp inbox, dashboard analítico
 
-**Stack:** Next.js 14 · TypeScript · Supabase (auth + DB + Realtime) · Tailwind CSS (site público) · Inline Styles (admin) · Vercel (deploy + Cron Jobs)
+**Stack:** Next.js 14 · TypeScript · Supabase (auth + DB + Realtime + Storage) · Tailwind CSS (site público) · Inline Styles (admin) · Vercel (deploy + Cron Jobs)
 
 ---
 
@@ -24,25 +24,28 @@ App Next.js 14 (App Router) para clínica odontológica em Brasília-DF. Duas á
 - Fonte principal: DM Sans
 - Fonte serif: Cormorant Garamond
 
+Tailwind config sobrescrito com cores da marca. Ver `tailwind.config.ts`.
+
 ---
 
 ## Arquitetura de Autenticação (REAL — não alterar sem ler isto)
 
 ```
 Browser → createBrowserClient().signInWithPassword(email, password)
-        ↓ Supabase escreve cookies de sessão no browser (client-side)
+        ↓ Supabase escreve cookies de sessão no browser
 window.location.href = redirect   ← hard redirect (não router.push)
         ↓ Browser envia os cookies na nova requisição
-middleware.ts → createServerClient → getSession()
-        ↓ Valida JWT localmente via assinatura (SEM chamada de rede)
+middleware.ts → createServerClient → getUser()
+        ↓ Valida JWT no Supabase + renova token automaticamente
 Autorizado: NextResponse.next() | Não autorizado: redirect('/admin/login')
 ```
 
 ### Regras críticas:
-- **`getSession()` no middleware** — valida JWT localmente, sem rede. Nunca usar `getUser()` no middleware (faz chamada de rede ao Supabase e pode falhar no Edge Runtime).
-- **`window.location.href`** no login, não `router.push()` — garante que o browser envia os cookies recém-criados na próxima requisição.
-- **`getUser()`** pode e deve ser usado dentro de Server Components e Route Handlers (fora do Edge Runtime).
+- **`getUser()` no middleware** — valida JWT diretamente no Supabase e renova token automaticamente via refresh token. Sessão persiste entre deploys. **Nunca usar `getSession()`** no middleware.
+- **`window.location.href`** no login, não `router.push()` — garante que o browser envia os cookies na próxima requisição.
 - **Cookies sem `httpOnly`** — o browser client precisa lê-los para signOut e reset-password.
+- **`/api/auth/login`** foi removido — login acontece 100% via browser client, não existe mais rota server-side de login.
+- **`/api/auth/whoami`** foi removido — era endpoint de debug.
 
 ### Arquivos de auth:
 - `app/admin/login/page.tsx` — formulário cliente, chama `createBrowserClient().signInWithPassword()` diretamente
@@ -82,7 +85,7 @@ Autorizado: NextResponse.next() | Não autorizado: redirect('/admin/login')
 ALTER TABLE appointments
 ADD COLUMN IF NOT EXISTS avaliacao_enviada BOOLEAN DEFAULT false;
 
--- 2. Módulo Financeiro (obrigatório para /admin/financeiro)
+-- 2. Módulo Financeiro (criar tabelas se ainda não existirem)
 CREATE TABLE IF NOT EXISTS user_roles (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   role TEXT NOT NULL DEFAULT 'secretaria' CHECK (role IN ('admin','secretaria')),
@@ -156,6 +159,9 @@ CREATE POLICY "Service manage roles" ON user_roles FOR ALL TO service_role USING
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ Configurada | Supabase → Project Settings → API |
 | `RESEND_API_KEY` | ✅ Configurada | resend.com → API Keys |
 | `RESEND_FROM_EMAIL` | 🟡 Temporário | Não configurada → usa `onboarding@resend.dev` como fallback. Setar `noreply@dracynthia.com.br` após verificar domínio no Resend |
+| `UPSTASH_REDIS_REST_URL` | ✅ Configurada | upstash.com → Database Redis → REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | ✅ Configurada | upstash.com → Database Redis → REST Token |
+| `CRON_SECRET` | ✅ Auto-injetado | Vercel injeta automaticamente como `Authorization: Bearer <secret>` nos cron jobs |
 | `ANTHROPIC_API_KEY` | ⚠️ **Pendente** | console.anthropic.com → API Keys |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | ⚠️ **Pendente** | GCP Console → Service Accounts → JSON em base64 |
 | `GOOGLE_CALENDAR_ID` | ⚠️ **Pendente** | Google Calendar → Configurações → ID do calendário |
@@ -164,9 +170,6 @@ CREATE POLICY "Service manage roles" ON user_roles FOR ALL TO service_role USING
 | `WHATSAPP_PHONE_NUMBER_ID` | ⚠️ **Pendente** | Meta Business Suite → WhatsApp → Phone Number ID |
 | `WHATSAPP_APP_SECRET` | ⚠️ **Pendente** | Meta Business Suite → App → App Secret |
 | `WHATSAPP_VERIFY_TOKEN` | ⚠️ **Pendente** | Gerar string aleatória e registrar no webhook Meta |
-| `UPSTASH_REDIS_REST_URL` | ✅ Configurada | upstash.com → Database Redis → REST URL |
-| `UPSTASH_REDIS_REST_TOKEN` | ✅ Configurada | upstash.com → Database Redis → REST Token |
-| `CRON_SECRET` | ✅ Auto-injetado | Vercel injeta automaticamente como `Authorization: Bearer <secret>` nos cron jobs |
 
 ---
 
@@ -174,43 +177,56 @@ CREATE POLICY "Service manage roles" ON user_roles FOR ALL TO service_role USING
 
 ### ✅ Já resolvido:
 - Migração SQL `avaliacao_enviada` — executada com sucesso
+- Tabelas do módulo Financeiro (`user_roles`, `financial_categories`, `financial_entries`) — criadas
 - `CRON_SECRET`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `RESEND_API_KEY` — configurados no Vercel
 - `CRON_SECRET` é injetado automaticamente pelo Vercel nos headers dos cron jobs
-- E-mail: usando `onboarding@resend.dev` como remetente temporário (ver abaixo)
-- Módulo Financeiro implementado (UI + API) — pendente apenas a migração SQL no Supabase
+- E-mail: usando `onboarding@resend.dev` como remetente temporário
 
 ### 🔴 Crítico (ainda pendente):
 
-1. **Migração SQL do módulo Financeiro:** executar o bloco SQL da seção "Schema" acima para criar as tabelas `user_roles`, `financial_categories`, `financial_entries` e seed de categorias. Sem isso a rota `/admin/financeiro` retorna 500.
+**1. Criar bucket `site` no Supabase Storage** — Supabase → Storage → New Bucket → nome: `site`, visibilidade: **Public**. Necessário para upload das 3 imagens principais do site.
 
-3. **Domínio na Vercel:** configurar `dracynthia.com.br` (DNS CNAME/A records apontando para Vercel)
+**2. Domínio na Vercel** — configurar `dracynthia.com.br` (DNS CNAME/A records)
 
-4. **Supabase Auth URLs:** em Authentication → URL Configuration:
-   - Site URL: `https://dracynthia.com.br`
-   - Redirect URLs: `https://dracynthia.com.br/auth/callback`
+**3. Supabase Auth URLs** — Authentication → Settings → atualizar Site URL e Redirect URLs para `https://dracynthia.com.br`
+
+**4. JWT Expiry no Supabase** — Supabase → Authentication → Settings → JWT expiry: mudar de `3600` para `2592000` (30 dias). Resolve sessão expirando a cada hora.
 
 ### 🟡 Importante (funcionalidades inativas):
 
-3. **`ANTHROPIC_API_KEY`** — habilita sugestão de resposta com IA no WhatsApp inbox (botão ✦)
+**5. WhatsApp Business API** — Meta Business Suite:
+1. Criar app tipo "Business" → adicionar produto WhatsApp
+2. Registrar número real
+3. Webhook: `https://dracynthia.com.br/api/whatsapp/webhook`
+4. Configurar: `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`
 
-4. **Google Calendar** — configurar `GOOGLE_SERVICE_ACCOUNT_JSON` (JSON em base64) e `GOOGLE_CALENDAR_ID`; compartilhar o calendário com o e-mail da service account
+**6. Google Calendar** — Google Cloud Console:
+1. Criar service account → baixar JSON da chave
+2. Compartilhar calendário com e-mail da service account
+3. Configurar: `GOOGLE_SERVICE_ACCOUNT_JSON` (JSON em base64) e `GOOGLE_CALENDAR_ID`
 
-5. **WhatsApp Business API** — configurar as 4 vars do Meta; registrar webhook em:
-   `https://dracynthia.com.br/api/webhooks/whatsapp`
+**7. `ANTHROPIC_API_KEY`** — habilita sugestão de resposta com IA no WhatsApp inbox (botão ✦)
 
-6. **`GOOGLE_REVIEWS_URL`** — link de avaliação do Google Business Profile (`https://g.page/r/[ID]/review`)
+**8. `GOOGLE_REVIEWS_URL`** — link do Google Business Profile para avaliações
 
 ### 🟢 Conteúdo e configuração:
 
-7. **Preencher `/admin/config`** — nome do consultório, CRO, endereço, WhatsApp, horários, headline do Hero, textos
+**9. Preencher `/admin/config`:**
+- Nome do consultório, endereço, CRO, telefone, WhatsApp (formato: `5561999999999`)
+- Horários de abertura e fechamento
+- Headline e subtítulo do Hero
+- Texto da seção Sobre
 
-8. **Fotos reais** — substituir placeholders no Hero, Sobre e Resultados
+**10. Upload das 3 Fotos Principais** (em `/admin/config` → Imagens Principais do Site):
+- Foto Hero (proporção 3:4), Foto Sobre (proporção 3:4), Foto Agendamento CTA (proporção 4:5)
 
-9. **Depoimentos e antes/depois** — criar registros em `/admin/conteudo`
+**11. Publicar primeiros artigos** em `/admin/blog/novo`
+
+**12. Adicionar casos Antes/Depois** em `/admin/conteudo`
 
 ### ⚪ Baixa prioridade:
 
-10. **`RESEND_FROM_EMAIL`** — atualmente usa `onboarding@resend.dev` (funciona para testes). Quando `dracynthia.com.br` estiver no ar: adicionar o domínio em resend.com → Domains, verificar via DNS, depois setar `RESEND_FROM_EMAIL=noreply@dracynthia.com.br` no Vercel
+**13. `RESEND_FROM_EMAIL`** — atualmente usa `onboarding@resend.dev`. Quando `dracynthia.com.br` estiver no ar: adicionar domínio em resend.com → Domains, verificar via DNS, depois setar `RESEND_FROM_EMAIL=noreply@dracynthia.com.br` no Vercel.
 
 ---
 
@@ -224,7 +240,8 @@ CREATE POLICY "Service manage roles" ON user_roles FOR ALL TO service_role USING
 | CRM Kanban + Tabela com filtros | `components/admin/LeadsKanban.tsx` + `components/admin/LeadsTable.tsx` |
 | Agenda (react-big-calendar) | `components/admin/AgendaCalendar.tsx` |
 | WhatsApp Inbox + sugestão IA | `components/admin/WhatsAppInbox.tsx` |
-| Blog (criar/editar/preview) | `components/admin/BlogForm.tsx` |
+| Blog (criar/editar/preview Markdown) | `components/admin/BlogForm.tsx` |
+| ImageCropper universal | `components/admin/ImageCropper.tsx` |
 | Busca global (⌘K) | `components/admin/GlobalSearch.tsx` |
 | Notificação tempo real de novo lead | `components/admin/NewLeadNotifier.tsx` |
 | Badge de leads novos no título da aba | `components/admin/AdminTitleBadge.tsx` |
@@ -242,16 +259,34 @@ CREATE POLICY "Service manage roles" ON user_roles FOR ALL TO service_role USING
 | Agendamento online com slots | `components/site/Agendamento.tsx` |
 | Blog público | `app/(site)/blog/` |
 | SEO + Schema.org | `app/(site)/page.tsx` (jsonLd) |
+| Imagens dinâmicas via site_config | `Hero.tsx`, `Sobre.tsx`, `Agendamento.tsx` |
 
 ### Integrações
 | Integração | Lib | Status |
 |---|---|---|
-| Supabase Auth + DB + Realtime | `lib/supabase/` | ✅ Ativo |
+| Supabase Auth + DB + Realtime + Storage | `lib/supabase/` | ✅ Ativo |
 | E-mail (Resend) | `lib/resend.ts` | ✅ API Key configurada |
 | Google Calendar | `lib/google-calendar.ts` | ⚠️ Aguarda env vars |
 | WhatsApp Business | `lib/whatsapp.ts` | ⚠️ Aguarda env vars |
-| Rate limiting (Upstash Redis) | `lib/rate-limit.ts` | ⚠️ Aguarda env vars |
+| Rate limiting (Upstash Redis) | `lib/rate-limit.ts` | ✅ Configurado |
 | IA (Claude Haiku) | `app/api/ai/suggest-reply/` | ⚠️ Aguarda ANTHROPIC_API_KEY |
+
+---
+
+## Sistema de Imagens Dinâmicas (ImageCropper)
+
+- `components/admin/ImageCropper.tsx` — modal com `react-easy-crop`, zoom + pan, aspect ratio travado
+- Props: `imageFile?: File | null`, `imageUrl?: string | null` (para re-editar imagem já salva), `aspectRatio: number`, `onCancel`, `onConfirm`
+- **Correção CORS:** `crossOrigin='anonymous'` só é setado para URLs absolutas (`http...`). Para imagens locais (`/images/...`) NÃO setar — evita canvas tainted e `toBlob()` retornando `null`.
+
+### Upload de Imagens
+- `app/api/upload/route.ts` — usa **admin client** (`SUPABASE_SERVICE_ROLE_KEY`) para bypass de RLS
+- **Auto-criação de bucket:** lista buckets existentes e cria automaticamente se necessário
+- Valida tipo (JPEG/PNG/WebP) e tamanho (máx 5MB)
+
+### Cache Invalidation
+- `app/actions.ts` → `export async function revalidateSite()` → `revalidatePath('/', 'layout')`
+- Chamar após: salvar configs, publicar blog, ativar/desativar Antes/Depois ou Depoimentos
 
 ---
 
@@ -321,7 +356,11 @@ Todos os componentes usam classes Tailwind `max-md:` para responsividade.
 1. **Admin usa inline styles**, não Tailwind. Manter padrão.
 2. **Site público usa Tailwind**. Manter padrão.
 3. **Tabela de blog é `posts`** — nunca referenciar `blog_posts`.
-4. **`createAdminClient()`** para crons e webhooks (service role, ignora RLS). **`createClient()`** para Server Components autenticados.
+4. **`createAdminClient()`** para crons, webhooks e upload (service role, ignora RLS). **`createClient()`** para Server Components autenticados.
 5. **Rate limiting** em `/api/booking` tem fallback gracioso — se Redis não estiver configurado, a requisição passa.
 6. **Google Calendar JSON** deve ser enviado em **base64** na env var.
 7. O campo `observacoes` nos leads corresponde a `anotacoes` na documentação antiga — usar `observacoes` (coluna real no banco).
+8. **Upload de imagens** usa `createAdminClient()` com `SUPABASE_SERVICE_ROLE_KEY` — nunca usar anon key para storage.
+9. **`ImageCropper`** aceita tanto `imageFile` (novo upload) quanto `imageUrl` (re-editar imagem já salva). NÃO setar `crossOrigin` para URLs relativas.
+10. **`app/actions.ts`** contém `revalidateSite()` — chamar após qualquer mutação que afete a home pública.
+11. **Financeiro:** admin vê receitas + despesas + gráficos; secretária vê apenas despesas e pendentes.

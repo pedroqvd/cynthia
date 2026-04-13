@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import type { BeforeAfter, Testimonial } from '@/lib/supabase/types'
 import { createClient } from '@/lib/supabase/client'
+import { ImageCropper } from './ImageCropper'
+import { revalidateSite } from '@/app/actions'
 
 interface Props {
   beforeAfter: BeforeAfter[]
@@ -15,15 +17,25 @@ export function ConteudoManager({ beforeAfter: initBA, testimonials: initTD }: P
   const [beforeAfter, setBeforeAfter] = useState(initBA)
   const [testimonials, setTestimonials] = useState(initTD)
   const [uploading, setUploading] = useState(false)
+  const [cropTarget, setCropTarget] = useState<{ file: File, field: 'antes' | 'depois', id?: string } | null>(null)
 
-  async function handleUploadBA(e: React.ChangeEvent<HTMLInputElement>, field: 'antes' | 'depois', id?: string) {
+  function handleFileSelectBA(e: React.ChangeEvent<HTMLInputElement>, field: 'antes' | 'depois', id?: string) {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (file) {
+      setCropTarget({ file, field, id })
+    }
+    e.target.value = ''
+  }
+
+  async function handleCropConfirm(croppedFile: File) {
+    if (!cropTarget) return
+    const { field, id } = cropTarget
+    setCropTarget(null)
 
     setUploading(true)
     try {
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', croppedFile)
       formData.append('bucket', 'before_after')
 
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
@@ -31,7 +43,7 @@ export function ConteudoManager({ beforeAfter: initBA, testimonials: initTD }: P
 
       if (!res.ok) throw new Error(data?.error)
 
-      toast.success('Imagem enviada!')
+      toast.success('Imagem enquadrada e enviada!')
       if (data?.url) {
         toast.info(`URL: ${data.url}`, { duration: 8000 })
       }
@@ -45,6 +57,7 @@ export function ConteudoManager({ beforeAfter: initBA, testimonials: initTD }: P
   async function toggleBA(id: string, ativo: boolean) {
     const supabase = createClient()
     await supabase.from('before_after').update({ ativo }).eq('id', id)
+    await revalidateSite()
     setBeforeAfter((prev) => prev.map((b) => b.id === id ? { ...b, ativo } : b))
     toast.success(ativo ? 'Caso ativado' : 'Caso desativado')
   }
@@ -52,6 +65,7 @@ export function ConteudoManager({ beforeAfter: initBA, testimonials: initTD }: P
   async function toggleTestimonial(id: string, ativo: boolean) {
     const supabase = createClient()
     await supabase.from('testimonials').update({ ativo }).eq('id', id)
+    await revalidateSite()
     setTestimonials((prev) => prev.map((t) => t.id === id ? { ...t, ativo } : t))
     toast.success(ativo ? 'Depoimento ativado' : 'Depoimento desativado')
   }
@@ -102,7 +116,7 @@ export function ConteudoManager({ beforeAfter: initBA, testimonials: initTD }: P
               }}
             >
               {uploading ? 'Enviando...' : '+ Upload de imagem'}
-              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleUploadBA(e, 'antes')} />
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileSelectBA(e, 'antes')} disabled={uploading}/>
             </label>
           </div>
 
@@ -181,6 +195,13 @@ export function ConteudoManager({ beforeAfter: initBA, testimonials: initTD }: P
           </div>
         </div>
       )}
+
+      <ImageCropper
+        imageFile={cropTarget?.file || null}
+        aspectRatio={1} // Quadrado para posts do Instagram/Antes-Depois
+        onCancel={() => setCropTarget(null)}
+        onConfirm={handleCropConfirm}
+      />
     </div>
   )
 }

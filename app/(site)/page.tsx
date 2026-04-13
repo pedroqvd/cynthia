@@ -45,7 +45,7 @@ async function getData() {
   try {
     const supabase = createAdminClient()
 
-    const [{ data: beforeAfter }, { data: testimonials }] = await Promise.all([
+    const [{ data: beforeAfter }, { data: testimonials }, { data: rawConfig }] = await Promise.all([
       supabase
         .from('before_after')
         .select('*')
@@ -56,16 +56,22 @@ async function getData() {
         .select('*')
         .eq('ativo', true)
         .order('ordem'),
+      supabase.from('site_config').select('key, value'),
     ])
 
-    return { beforeAfter: beforeAfter ?? [], testimonials: testimonials ?? [] }
+    const config: Record<string, string> = {}
+    if (rawConfig) {
+      rawConfig.forEach((row) => { config[row.key] = row.value })
+    }
+
+    return { beforeAfter: beforeAfter ?? [], testimonials: testimonials ?? [], config }
   } catch {
-    return { beforeAfter: [], testimonials: [] }
+    return { beforeAfter: [], testimonials: [], config: {} }
   }
 }
 
 export default async function HomePage() {
-  const { beforeAfter, testimonials } = await getData()
+  const { beforeAfter, testimonials, config } = await getData()
 
   return (
     <>
@@ -74,13 +80,13 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Nav />
-      <Hero />
+      <Hero imgUrl={config.img_hero} />
       <Diferencial />
-      <Sobre />
+      <Sobre imgUrl={config.img_sobre} />
       <Especialidades />
       <Resultados items={beforeAfter.length > 0 ? beforeAfter : undefined} />
       <Depoimentos items={testimonials.length > 0 ? testimonials : undefined} />
-      <Agendamento />
+      <Agendamento imgUrl={config.img_cta} />
       <Footer />
     </>
   )

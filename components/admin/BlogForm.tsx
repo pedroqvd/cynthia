@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { ImageCropper } from './ImageCropper'
+import { revalidateSite } from '@/app/actions'
 import Image from 'next/image'
 
 /** Renderização simplificada de Markdown → HTML para preview */
@@ -37,6 +39,7 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [contentTab, setContentTab] = useState<'editar' | 'preview'>('editar')
+  const [cropFile, setCropFile] = useState<File | null>(null)
   const [formData, setFormData] = useState<Post>(
     initialData || {
       title: '',
@@ -57,22 +60,26 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
       .replace(/-+$/, '')
   }
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (file) setCropFile(file)
+    e.target.value = '' // Limpa o input para poder re-selecionar o mesmo se necessário
+  }
 
+  async function handleCropConfirm(croppedFile: File) {
+    setCropFile(null)
     setUploading(true)
     try {
       const form = new FormData()
-      form.append('file', file)
-      form.append('bucket', 'site') // Usando o bucket 'site' que já deve existir. Ou before_after
+      form.append('file', croppedFile)
+      form.append('bucket', 'before_after')
 
       const res = await fetch('/api/upload', { method: 'POST', body: form })
       const { data } = await res.json()
 
       if (!res.ok) throw new Error(data?.error)
       setFormData(prev => ({ ...prev, cover_image: data.url }))
-      toast.success('Imagem enviada com sucesso!')
+      toast.success('Imagem recortada e enviada com sucesso!')
     } catch (err) {
       toast.error('Erro ao enviar imagem.')
     } finally {
@@ -105,6 +112,8 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
         if (error) throw error
         toast.success('Artigo salvo com sucesso!')
       }
+
+      await revalidateSite() // Refresh cache global
 
       router.push('/admin/blog')
       router.refresh()
@@ -255,7 +264,7 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
 
           <label style={{ display: 'inline-block', textAlign: 'center', padding: '.5rem', border: '1px solid #e5e5e3', borderRadius: '4px', cursor: uploading ? 'not-allowed' : 'pointer', fontSize: '.8rem', color: '#0f0e0c' }}>
             {uploading ? 'Fazendo Upload...' : 'Escolher Imagem (Upload)'}
-            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} disabled={uploading}/>
+            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileSelect} disabled={uploading}/>
           </label>
         </div>
 
@@ -271,6 +280,12 @@ export function BlogForm({ initialData }: { initialData?: Post }) {
         </div>
 
       </div>
+      <ImageCropper
+        imageFile={cropFile}
+        aspectRatio={16 / 9}
+        onCancel={() => setCropFile(null)}
+        onConfirm={handleCropConfirm}
+      />
     </form>
   )
 }

@@ -23,7 +23,8 @@ function maxDate() {
   return toYMD(d)
 }
 
-export function Agendamento() {
+export function Agendamento({ imgUrl }: { imgUrl?: string }) {
+  const src = imgUrl || '/images/cynthia-cta.jpg'
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [selectedDate, setSelectedDate] = useState('')
@@ -100,39 +101,66 @@ export function Agendamento() {
       }}
       className="max-md:!grid-cols-1"
     >
-      {/* ── Lado esquerdo: foto ── */}
+      {/* ── Lado esquerdo: foto flutuante ── */}
       <div
-        style={{ position: 'relative', minHeight: '500px' }}
+        style={{ 
+          position: 'relative', 
+          minHeight: '600px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '6rem 4rem'
+        }}
         className="max-md:hidden"
       >
-        {/* Foto da Dra. Cynthia — blusa tiffany, fundo preto */}
-        <Image
-          src="/images/cynthia-cta.jpg"
-          alt="Dra. Cynthia Quevedo"
-          fill
-          sizes="50vw"
-          style={{ objectFit: 'cover', objectPosition: 'center top' }}
-        />
-        {/* Gradiente lateral */}
+        {/* Moldura offset deslocada levemente para diagonal invertida (esquerda-baixo) */}
         <div
           style={{
             position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to right, transparent 60%, #163D32 100%)',
+            inset: '6rem 4rem',
+            border: '1px solid rgba(201,169,110,0.35)',
+            transform: 'translate(-1.5rem, 1.5rem)',
+            borderRadius: '12px',
+            zIndex: 1,
           }}
         />
-        {/* Monograma flutuante */}
+
+        {/* Wrapper dinâmico da imagem */}
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            zIndex: 2,
+            boxShadow: '0 30px 60px -15px rgba(0,0,0, 0.45)',
+          }}
+        >
+          {/* Foto da Dra. Cynthia — blusa tiffany, fundo preto */}
+          <Image
+            src={src}
+            alt="Dra. Cynthia Quevedo"
+            fill
+            sizes="50vw"
+            style={{ objectFit: 'cover', objectPosition: 'center top' }}
+          />
+        </div>
+
+        {/* Monograma flutuante (fora da foto sobrepondo tudo como uma marca d'água) */}
         <div
           style={{
             position: 'absolute',
-            bottom: '3rem',
-            left: '3rem',
+            bottom: '2.5rem',
+            left: '2.5rem',
             fontFamily: 'Cormorant Garamond, Georgia, serif',
-            fontSize: '4rem',
+            fontSize: '4.5rem',
             fontWeight: 300,
-            color: 'rgba(201,169,110,0.25)',
+            color: 'rgba(201,169,110,0.3)',
             lineHeight: 1,
             letterSpacing: '-.02em',
+            zIndex: 3,
+            pointerEvents: 'none'
           }}
         >
           CQ
@@ -329,9 +357,10 @@ export function Agendamento() {
                   transition: 'border-color .2s, color .2s',
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: .7 }}>
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                  <path d="M11.5 2C6.262 2 2 6.262 2 11.5c0 1.986.569 3.84 1.551 5.4L2 22l5.269-1.525A9.449 9.449 0 0011.5 21c5.238 0 9.5-4.262 9.5-9.5S16.738 2 11.5 2z"/>
+                {/* Logo oficial WhatsApp */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.975-1.412A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="#25D366"/>
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="white"/>
                 </svg>
                 WhatsApp
               </a>

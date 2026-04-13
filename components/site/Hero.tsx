@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 
-export function Hero() {
+export function Hero({ imgUrl }: { imgUrl?: string }) {
+  const src = imgUrl || '/images/cynthia-hero.jpg'
   return (
     <section
       id="hero"
@@ -189,61 +190,89 @@ export function Hero() {
         </div>
       </div>
 
-      {/* ── Lado direito — foto ── */}
+      {/* ── Lado direito — foto flutuante premium ── */}
       <div
         style={{
           position: 'relative',
           height: '100vh',
-          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '6rem 4rem',
           animation: 'fadeIn 1.2s .3s ease both',
         }}
         className="max-md:hidden"
       >
-        {/* Foto da Dra. Cynthia — jaleco branco, fundo rosa */}
-        <Image
-          src="/images/cynthia-hero.jpg"
-          alt="Dra. Cynthia Quevedo — Especialista em Estética Dental, Cirurgia e Prótese"
-          fill
-          sizes="50vw"
-          style={{ objectFit: 'cover', objectPosition: 'center top' }}
-          priority
-        />
-
-        {/* Overlay gradiente inferior */}
+        {/* Moldura offset dourada (Offset golden frame) */}
         <div
           style={{
             position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '35%',
-            background: 'linear-gradient(to top, #F5F0E6 0%, transparent 100%)',
-            zIndex: 2,
+            inset: '6rem 4rem',
+            border: '1px solid rgba(201,169,110,0.6)',
+            transform: 'translate(1.5rem, 1.5rem)',
+            borderRadius: '12px',
+            zIndex: 1,
           }}
         />
 
-        {/* Caption */}
-        <div style={{ position: 'absolute', bottom: '3rem', left: '2.5rem', zIndex: 3 }}>
+        {/* Wrapper da imagem com sombreado */}
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            zIndex: 2,
+            boxShadow: '0 30px 60px -15px rgba(27,107,90, 0.25)',
+          }}
+        >
+          {/* Foto da Dra. Cynthia — jaleco branco, fundo rosa */}
+          <Image
+            src={src}
+            alt="Dra. Cynthia Quevedo — Especialista em Estética Dental, Cirurgia e Prótese"
+            fill
+            sizes="50vw"
+            style={{ objectFit: 'cover', objectPosition: 'center top' }}
+            priority
+          />
+
+          {/* Overlay gradiente escuro inferior para contraste da legenda */}
           <div
             style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontSize: '1.2rem',
-              fontWeight: 400,
-              color: '#1C1C1C',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '40%',
+              background: 'linear-gradient(to top, rgba(15,14,12,0.85) 0%, transparent 100%)',
+              zIndex: 2,
             }}
-          >
-            Dra. Cynthia Quevedo
-          </div>
-          <div
-            style={{
-              fontSize: '.68rem',
-              letterSpacing: '.14em',
-              textTransform: 'uppercase',
-              color: '#1B6B5A',
-              marginTop: '.2rem',
-            }}
-          >
-            Estética · Cirurgia Oral · Prótese
+          />
+
+          {/* Caption */}
+          <div style={{ position: 'absolute', bottom: '2.5rem', left: '2.5rem', zIndex: 3 }}>
+            <div
+              style={{
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
+                fontSize: '1.25rem',
+                fontWeight: 400,
+                color: '#F5F0E6',
+              }}
+            >
+              Dra. Cynthia Quevedo
+            </div>
+            <div
+              style={{
+                fontSize: '.68rem',
+                letterSpacing: '.14em',
+                textTransform: 'uppercase',
+                color: '#C9A96E',
+                marginTop: '.3rem',
+              }}
+            >
+              Estética · Cirurgia Oral · Prótese
+            </div>
           </div>
         </div>
       </div>

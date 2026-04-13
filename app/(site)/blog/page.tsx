@@ -109,17 +109,20 @@ export default async function BlogPage() {
                 }}
                 className="group"
               >
-                {/* Imagem */}
+                {/* Imagem (Moldura) */}
                 <div
                   style={{
                     width: '100%',
                     aspectRatio: '16/10',
                     position: 'relative',
-                    borderRadius: '10px',
+                    borderRadius: '12px',
                     overflow: 'hidden',
                     background: '#EDE7D9',
-                    border: '0.5px solid #EAE3D2'
+                    border: '1px solid rgba(201,169,110,0.2)',
+                    boxShadow: '0 12px 24px -10px rgba(0,0,0,0.06)',
+                    transition: 'box-shadow 0.4s ease, border-color 0.4s ease'
                   }}
+                  className="group-hover:border-[#C9A96E]/50 group-hover:shadow-[0_20px_40px_-15px_rgba(27,107,90,0.15)]"
                 >
                   {post.cover_image ? (
                     <Image
