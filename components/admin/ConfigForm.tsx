@@ -78,36 +78,24 @@ export function ConfigForm({ config: initialConfig }: Props) {
     const { key } = cropTarget
     setCropTarget(null)
     setLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', croppedFile)
+      formData.append('bucket', 'site')
 
-    const bucketsToTry = ['site', 'before_after']
-    
-    for (const bucket of bucketsToTry) {
-      try {
-        const formData = new FormData()
-        formData.append('file', croppedFile)
-        formData.append('bucket', bucket)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const json = await res.json()
 
-        const res = await fetch('/api/upload', { method: 'POST', body: formData })
-        const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Erro desconhecido')
 
-        if (!res.ok) {
-          console.warn(`Bucket "${bucket}" falhou:`, json.error)
-          continue // Tenta o próximo bucket
-        }
-
-        setConfig((prev) => ({ ...prev, [key]: json.data.url }))
-        toast.success('Imagem pronta! Clique "Salvar configurações" para aplicar.')
-        setLoading(false)
-        return // Sucesso, sai do loop
-      } catch (err) {
-        console.warn(`Bucket "${bucket}" erro:`, err)
-        continue
-      }
+      setConfig((prev) => ({ ...prev, [key]: json.data.url }))
+      toast.success('Imagem pronta! Clique "Salvar configurações" para aplicar.')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erro ao enviar imagem.'
+      toast.error(message)
+    } finally {
+      setLoading(false)
     }
-
-    // Se nenhum bucket funcionou
-    toast.error('Erro ao enviar imagem. Verifique se o bucket "site" existe no Supabase Storage.')
-    setLoading(false)
   }
 
   async function handleSave() {
