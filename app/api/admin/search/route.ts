@@ -32,9 +32,9 @@ export async function GET(req: NextRequest) {
       .ilike('procedimento', like)
       .limit(5),
     supabase
-      .from('blog_posts')
-      .select('id, titulo, slug, published_at')
-      .or(`titulo.ilike.${like},conteudo.ilike.${like}`)
+      .from('posts')
+      .select('id, title, slug')
+      .ilike('title', like)
       .limit(5),
   ])
 

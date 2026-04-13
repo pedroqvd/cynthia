@@ -123,7 +123,7 @@ export default async function DashboardPage() {
       <DashboardCharts leadsRecentes={metrics.leadsRecentes} funil={metrics.funil} />
 
       {/* Grid inferior */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
         {/* Próximas consultas */}
         <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.5rem' }}>
           <h2 style={{ fontSize: '.9rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '1rem' }}>

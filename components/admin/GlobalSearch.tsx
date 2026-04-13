@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 interface SearchResults {
   leads: { id: string; nome: string; whatsapp: string; especialidade: string | null; status: string }[]
   appointments: { id: string; procedimento: string; data_hora: string; status: string; leads: { nome: string } | { nome: string }[] | null }[]
-  posts: { id: string; titulo: string; slug: string }[]
+  posts: { id: string; title: string; slug: string }[]
 }
 
 export function GlobalSearch() {
@@ -167,7 +167,7 @@ export function GlobalSearch() {
                     <ResultRow
                       key={p.id}
                       icon="📝"
-                      primary={p.titulo}
+                      primary={p.title}
                       secondary={p.slug}
                       onClick={() => navigate(`/admin/blog/${p.id}`)}
                     />

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { formatDateTime } from '@/lib/utils'
 import type { Lead, Message } from '@/lib/supabase/types'
+import { useIsMobile } from '@/lib/hooks/useIsMobile'
 
 interface Conversation extends Lead {
   messages: Message[]
@@ -29,6 +30,8 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
   const [sending, setSending] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [suggesting, setSuggesting] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(true)
+  const isMobile = useIsMobile()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const selectedConv = conversations.find((c) => c.id === selectedId)
@@ -63,6 +66,7 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
 
   async function handleSelectConv(conv: Conversation) {
     setSelectedId(conv.id)
+    if (isMobile) setShowSidebar(false)
     // Carrega mensagens do lead
     const supabase = createClient()
     const { data } = await supabase
@@ -123,9 +127,9 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
       {/* Lista de conversas */}
       <div
         style={{
-          width: '300px',
+          width: isMobile ? '100%' : '300px',
           borderRight: '1px solid #e5e5e3',
-          display: 'flex',
+          display: isMobile && !showSidebar ? 'none' : 'flex',
           flexDirection: 'column',
           background: '#fff',
           flexShrink: 0,
@@ -208,7 +212,7 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
       </div>
 
       {/* Chat */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#fafaf9', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: isMobile && showSidebar ? 'none' : 'flex', flexDirection: 'column', background: '#fafaf9', overflow: 'hidden' }}>
         {selectedConv ? (
           <>
             {/* Header do chat */}
@@ -222,6 +226,17 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
                 gap: '1rem',
               }}
             >
+              {isMobile && (
+                <button
+                  onClick={() => setShowSidebar(true)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7a7570', padding: '4px', display: 'flex', flexShrink: 0 }}
+                  aria-label="Voltar"
+                >
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M11 4L5 9l6 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              )}
               <div>
                 <div style={{ fontSize: '.95rem', fontWeight: 500, color: '#0f0e0c' }}>{selectedConv.nome}</div>
                 <div style={{ fontSize: '.72rem', color: '#7a7570' }}>{selectedConv.whatsapp}</div>

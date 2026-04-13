@@ -2,6 +2,7 @@
 
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { useMemo } from 'react'
+import { useIsMobile } from '@/lib/hooks/useIsMobile'
 
 interface Lead {
   id: string
@@ -32,6 +33,8 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export function DashboardCharts({ leadsRecentes, funil }: Props) {
+  const isMobile = useIsMobile()
+
   // Agrupa leads por dia (últimos 30 dias)
   const leadsPorDia = useMemo(() => {
     const map: Record<string, number> = {}
@@ -120,7 +123,7 @@ export function DashboardCharts({ leadsRecentes, funil }: Props) {
       )}
     </div>
 
-    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: '1.5rem' }}>
       {/* Gráfico de linha — leads por dia */}
       <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.5rem' }}>
         <h2 style={{ fontSize: '.9rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '1.5rem' }}>
