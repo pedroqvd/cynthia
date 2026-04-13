@@ -1,43 +1,246 @@
 # AI Context / Developer Handover
 
-Este arquivo foi criado para servir de bússola para futuras Inteligências Artificiais e Desenvolvedores que atuarem na manutenção do repositório da `Dra. Cynthia`. Abaixo, listo exatamente o que foi arquitetado e modificado recentemente (Abril/2026).
+Este arquivo é a bússola para futuras IAs e desenvolvedores no repositório `Dra. Cynthia`.
+Atualizado em: **Abril 2026**. Leia **tudo** antes de tocar em qualquer arquivo.
 
-## 1. Correção de Ambiente & Painel Admin
-- **Problema resolvido:** O painel administrativo sofria "falsos bloqueios" de auth. 
-- **Correção:** A variável de ambiente na Vercel `NEXT_PUBLIC_SUPABASE_URL` estava apontando para uma *api key* e não para a URL (`https://oteywlorjrqwwrsodosc.supabase.co`).
-- **Segurança:** A página `/admin/login/page.tsx` foi isolada; implementou-se uma condicional no `components/admin/Sidebar.tsx` que esconde todo o menu se `isLoginPage === true`, garantindo que visitantes e possíveis invasores não visualizem a infraestrutura administrativa do sistema antes de autenticar.
+---
 
-## 2. Refatoração Visual (Brand Guidelines v2.0)
-- **Tailwind Config:** Todas as cores foram sobregravadas no `tailwind.config.ts`.
-  - Esmeralda: `#1B6B5A`
-  - Bordô: `#7B1D3A`
-  - Creme/Bone: `#F5F0E6`
-  - Ouro: `#C9A96E`
-- **Animações:** Foram reduzidas para respeitar a restrição de *máximo 400ms* na subida e aparição (`fade-up`, `fade-in`).
-- **Padrões de UI:** Componentes como `Especialidades`, `Hero`, e `Agendamento` tiveram remoção de *drop-shadows*. Os botões primários foram fixados no novo preenchimento (`14px 28px`), textos de Label seguiram fonte **Jost uppercase com tracking 0.14em**.
-- **Imagem de Logo:** Os logotipos puramente baseados em texto renderizado no `Nav.tsx` e `Footer.tsx` foram trocados por chamadas definitivas à `<img src="/images/logo-cq.png" />`.
-- **Favicon:** Adicionado meta configuration no `app/layout.tsx` forçando o apontamento para `/images/favicon.ico.png`.
+## Visão Geral do Projeto
 
-## 3. Arquitetura do Blog / CMS (Novidade)
-Foi implementada uma seção de revista científica e de notícias (O Blog).
+App Next.js 14 (App Router) para clínica odontológica. Duas áreas principais:
+- **Site público** (`/`) — captação de leads, agendamento online, blog
+- **Painel admin** (`/admin/*`) — CRM, agenda, WhatsApp inbox, dashboard
 
-### 3.1: Migrations Supabase
-- Tabela criada: `posts` (`id, slug, title, excerpt, content, cover_image, published, created_at, updated_at`).
-- Trigger gerado para autogerenciamento de `updated_at`.
-- RLS Políticas Ativadas: Público apenas visualiza (`select where published = true`); Autenticados (Admin) tem total (`all`).
+Stack: Next.js 14 · TypeScript · Supabase (auth + DB + Realtime) · Tailwind CSS (site) + Inline Styles (admin) · Vercel (deploy + Cron Jobs)
 
-### 3.2: Rotas Públicas do Next.js
-- `/app/(site)/blog/page.tsx`: Lista dinâmica de todos os artigos publicados, usando cards fluidos e requisição segura tipada.
-- `/app/(site)/blog/[slug]/page.tsx`: A página de leitura do artigo em si, utilizando a biblioteca npm `react-markdown` combinada ao `@tailwindcss/typography` no Tailwind (`prose prose-lg`).
+---
 
-### 3.3: Rotas Administrativas 
-- `/app/admin/blog/page.tsx`: Painel de visualização de todos os artigos com label Rascunho/Público.
-- `/app/admin/blog/novo/page.tsx`: Gerador da página.
-- `/app/admin/blog/[id]/page.tsx`: Editor.
-- `components/admin/BlogForm.tsx`: Componente isolado e reutilizável pelo estado Create e Update. Realiza interface de escrita Markdown, *slug generation* nativo e faz interface de Upload de Imagem de Capa diretamente voltada ao bucket do Supabase (bucket compartilhado e de uso geral do site).
+## Histórico de Correções Importantes
 
-### Ferramental adicionado em Package.json:
-- `react-markdown`
-- `@tailwindcss/typography`
+### Correção de Auth (Abril 2026)
+O painel sofria loop de redirecionamento após login.
 
-*Fim do log. O projeto permanece utilizando App Router do Next.js com as mais perfeitas práticas de render.*
+**Causa raiz:** O login usava `createBrowserClient` (client-side), que escrevia cookies via `document.cookie` sem `path='/'`. Em alguns navegadores, cookies sem path explícito ficam restritos a `/admin/login` e não são enviados para `/admin/dashboard`.
+
+**Solução implementada:**
+- `app/api/auth/login/route.ts` — Server Route que faz `signInWithPassword` server-side e escreve cookies via HTTP `Set-Cookie` com `path: '/'`
+- `middleware.ts` — usa `getUser()` (valida JWT server-side, mais seguro que `getSession()`)
+- `app/admin/login/page.tsx` — chama `fetch('/api/auth/login')` em vez de usar o browser client
+
+**IMPORTANTE:** Os cookies NÃO usam `httpOnly: true` porque o browser client (`createBrowserClient`) precisa lê-los para `signOut`, callback e reset-password.
+
+---
+
+## Brand Guidelines
+
+- Fundo escuro: `#0f0e0c`
+- Ouro/Dourado: `#b8965a`
+- Texto cinza: `#7a7570`
+- Fonte principal: DM Sans
+- Fonte serif: Cormorant Garamond
+
+Tailwind config sobrescrito com cores da marca. Ver `tailwind.config.ts`.
+
+---
+
+## Schema do Banco de Dados (Supabase)
+
+### Tabelas principais:
+- `leads` — id, nome, whatsapp, email, especialidade, status (novo|em_contato|agendado|proposta|fechado), urgencia (alta|media|baixa), origem, ticket_estimado, anotacoes, created_at
+- `appointments` — id, lead_id, procedimento, data_hora, duracao_min, status (agendado|confirmado|realizado|cancelado), google_event_id, **avaliacao_enviada** (ver nota abaixo), created_at
+- `messages` — id, lead_id, content, direction (in|out), status (sent|delivered|read), wa_message_id, created_at
+- `posts` — id, slug, title, excerpt, content, cover_image, published, created_at, updated_at
+
+### ⚠️ Migração pendente (o USER precisa executar):
+```sql
+ALTER TABLE appointments
+ADD COLUMN IF NOT EXISTS avaliacao_enviada BOOLEAN DEFAULT false;
+```
+Sem esta coluna, o cron `/api/cron/avaliacao` vai falhar com erro de coluna inexistente.
+
+---
+
+## Blog
+
+A tabela de blog é **`posts`** (não `blog_posts`). Colunas: `id, slug, title, excerpt, content, cover_image, published, created_at, updated_at`.
+
+Rotas:
+- `/app/(site)/blog/page.tsx` — lista pública
+- `/app/(site)/blog/[slug]/page.tsx` — artigo individual
+- `/app/admin/blog/page.tsx` — painel de gerenciamento
+- `/app/admin/blog/novo/page.tsx` — criar artigo
+- `/app/admin/blog/[id]/page.tsx` — editar artigo
+- `components/admin/BlogForm.tsx` — componente de formulário reutilizado
+
+---
+
+## Features Implementadas (Abril 2026)
+
+### 1. Funil de Conversão no Dashboard
+- `app/admin/dashboard/page.tsx` — 5 queries paralelas por status do lead
+- `components/admin/DashboardCharts.tsx` — barras horizontais com % de conversão por etapa
+
+### 2. Notificação de Novo Lead em Tempo Real
+- `components/admin/NewLeadNotifier.tsx` — Supabase Realtime, beep via Web Audio API, toast + Notification API
+- Renderizado em `app/admin/layout.tsx`
+
+### 3. Sugestão de Resposta com IA
+- `app/api/ai/suggest-reply/route.ts` — chama Claude Haiku (`claude-haiku-4-5-20251001`)
+- `components/admin/WhatsAppInbox.tsx` — botão ✦ IA (roxo) no input
+- **Requer:** `ANTHROPIC_API_KEY` nas variáveis de ambiente da Vercel
+
+### 4. Exportação CSV de Leads
+- `app/api/leads/route.ts` — handler GET detecta `?format=csv`, retorna CSV com BOM UTF-8
+- Botão de exportação na página `/admin/leads`
+
+### 5. Agendamento Online com Slots de Horário
+- `components/site/Agendamento.tsx` — date picker + dropdown de horários disponíveis
+- `app/api/booking/route.ts` — cria lead, evento Google Calendar, salva appointment
+- `app/api/calendar/availability/route.ts` — busca slots livres
+- **Requer:** `GOOGLE_SERVICE_ACCOUNT_JSON` e `GOOGLE_CALENDAR_ID` na Vercel
+
+### 6. Cron de Avaliação Pós-Consulta
+- `app/api/cron/avaliacao/route.ts` — envia WhatsApp com link de avaliação 24-48h após consulta
+- Agendado no `vercel.json`: `"0 15 * * *"` (15h UTC = 12h BRT)
+- **Requer:** `GOOGLE_REVIEWS_URL` na Vercel + migração `avaliacao_enviada` (acima)
+
+### 7. Preferências de Visualização da Agenda
+- `components/admin/AgendaCalendar.tsx` — salva e restaura view (semana/mês/dia) no `localStorage`
+
+### 8. Busca Global (Cmd+K)
+- `components/admin/GlobalSearch.tsx` — modal com atalho de teclado, busca debounced
+- `app/api/admin/search/route.ts` — busca em `leads`, `appointments`, `posts`
+- Renderizado em `app/admin/layout.tsx`
+
+### 9. Badge de Leads Novos no Título da Aba
+- `components/admin/AdminTitleBadge.tsx` — atualiza `document.title` com `(N)` em tempo real
+- Renderizado em `app/admin/layout.tsx`
+
+---
+
+## Responsividade Mobile (Atualizada Abril 2026)
+
+### Site público — OK ✅
+Todos os componentes (`Nav`, `Hero`, `Agendamento`, `Especialidades`, `Depoimentos`, `Footer`, `Diferencial`, `Resultados`, `Sobre`) usam classes Tailwind `max-md:` para responsividade.
+
+### Painel Admin — Corrigido ✅
+- **`AdminSidebar`** — auto-colapsa em viewports < 640px via `useEffect` + `resize` listener
+- **`WhatsAppInbox`** — toggle entre lista de conversas e chat em mobile; botão "voltar" no header do chat
+- **`DashboardCharts`** — grid `2fr 1fr` vira `1fr` em mobile via `useIsMobile()`
+- **`Dashboard page`** — grid inferior usa `repeat(auto-fit, minmax(300px, 1fr))` (CSS puro)
+- **`LeadsKanban`** — scroll horizontal com `-webkit-overflow-scrolling: touch` + `overscrollBehaviorX: contain`
+
+Hook utilitário: `lib/hooks/useIsMobile.ts` — detecta `window.innerWidth < 768`, SSR-safe (inicia `false`).
+
+---
+
+## Variáveis de Ambiente Necessárias
+
+| Variável | Status | Descrição |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ Configurada | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Configurada | Chave anônima Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ Configurada | Chave admin Supabase |
+| `ANTHROPIC_API_KEY` | ⚠️ **Pendente** | Para sugestão de resposta com IA |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | ⚠️ **Pendente** | JSON da service account Google Calendar |
+| `GOOGLE_CALENDAR_ID` | ⚠️ **Pendente** | ID do calendário Google |
+| `GOOGLE_REVIEWS_URL` | ⚠️ **Pendente** | Link do Google Business para avaliações |
+| `WHATSAPP_ACCESS_TOKEN` | ⚠️ **Pendente** | Token da API WhatsApp Business |
+| `WHATSAPP_PHONE_NUMBER_ID` | ⚠️ **Pendente** | ID do número WhatsApp |
+| `WHATSAPP_APP_SECRET` | ⚠️ **Pendente** | Segredo para verificar webhooks |
+| `WHATSAPP_VERIFY_TOKEN` | ⚠️ **Pendente** | Token de verificação do webhook |
+| `UPSTASH_REDIS_REST_URL` | ⚠️ **Pendente** | Para rate limiting do agendamento público |
+| `UPSTASH_REDIS_REST_TOKEN` | ⚠️ **Pendente** | Token do Upstash Redis |
+| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | ⚠️ **Pendente** | Para envio de e-mail de confirmação |
+
+---
+
+## O Que o Usuário Ainda Precisa Fazer
+
+### 🔴 Crítico (o app não funciona plenamente sem isso):
+1. **Migração Supabase:** executar no SQL Editor:
+   ```sql
+   ALTER TABLE appointments ADD COLUMN IF NOT EXISTS avaliacao_enviada BOOLEAN DEFAULT false;
+   ```
+2. **Domínio na Vercel:** configurar `dracynthia.com.br` (DNS CNAME/A records)
+3. **Supabase Auth URLs:** atualizar Site URL e Redirect URLs para `https://dracynthia.com.br`
+
+### 🟡 Importante (funcionalidades ficam inativas sem isso):
+4. **`ANTHROPIC_API_KEY`** — obter em console.anthropic.com → API Keys
+5. **`GOOGLE_SERVICE_ACCOUNT_JSON`** e **`GOOGLE_CALENDAR_ID`** — Google Cloud Console, compartilhar calendário com e-mail da service account
+6. **WhatsApp Business API** — Meta Business Suite, webhook em `https://dracynthia.com.br/api/whatsapp/webhook`
+7. **`GOOGLE_REVIEWS_URL`** — link de avaliação do Google Business Profile (`https://g.page/r/[ID]/review`)
+8. **Upstash Redis** — upstash.com, criar database Redis, copiar REST URL e token
+
+### 🟢 Conteúdo / Configuração:
+9. **Preencher `/admin/config`** — CRO, endereço, número WhatsApp, horários de atendimento
+10. **Testar login** via `GET /api/auth/whoami` — retorna 200 com user info se autenticado, 401 se não. **Remover este endpoint após validar**.
+11. **Adicionar fotos reais** — substituir imagens placeholder no Hero, Sobre e Resultados
+
+---
+
+## Endpoints Importantes
+
+| Rota | Descrição |
+|---|---|
+| `POST /api/auth/login` | Login server-side (cookies com path='/') |
+| `GET /api/auth/whoami` | Debug: verifica autenticação (remover após validar) |
+| `GET /api/leads?format=csv` | Download CSV de todos os leads |
+| `POST /api/booking` | Agendamento público (rate limited) |
+| `GET /api/calendar/availability?date=YYYY-MM-DD` | Slots livres do Google Calendar |
+| `POST /api/ai/suggest-reply` | Sugestão de resposta via Claude Haiku |
+| `GET /api/admin/search?q=termo` | Busca global (auth obrigatório) |
+| `POST /api/whatsapp/webhook` | Recebe mensagens do WhatsApp |
+| `GET /api/cron/*` | Cron jobs (autenticados por `CRON_SECRET`) |
+
+---
+
+## Cron Jobs (vercel.json)
+
+| Path | Schedule (UTC) | BRT | Função |
+|---|---|---|---|
+| `/api/cron/reminders` | `0 11 * * *` | 08h | Lembra pacientes de consultas do dia |
+| `/api/cron/followup` | `0 12 * * *` | 09h | Follow-up de leads inativos |
+| `/api/cron/reativacao` | `0 13 * * 1` | 10h (seg) | Reativa leads frios |
+| `/api/cron/sync-calendar` | `0 14 * * *` | 11h | Sincroniza Google Calendar |
+| `/api/cron/avaliacao` | `0 15 * * *` | 12h | Pede avaliação Google pós-consulta |
+
+---
+
+## Arquitetura de Autenticação
+
+```
+Browser → POST /api/auth/login → Supabase signInWithPassword
+                ↓
+         Set-Cookie (path='/', sem httpOnly)
+                ↓
+Browser → GET /admin/dashboard → middleware.ts
+                ↓
+         createServerClient → getUser() (valida JWT no servidor)
+                ↓
+         Autorizado: next() | Não autorizado: redirect('/admin/login')
+```
+
+**Nunca usar `getSession()` no middleware** — usa `getUser()` que valida o JWT no Supabase.
+
+---
+
+## Supabase Realtime
+
+| Canal | Tabela | Eventos | Componente |
+|---|---|---|---|
+| `title-badge-leads` | leads | INSERT, UPDATE | AdminTitleBadge |
+| `new-lead-notifier` | leads | INSERT | NewLeadNotifier |
+| `messages-realtime` | messages | INSERT | WhatsAppInbox |
+
+---
+
+## Notas para Próxima IA
+
+1. **Tabela de blog é `posts`**, não `blog_posts`. Nunca referenciar `blog_posts`.
+2. **Admin usa inline styles**, não Tailwind (exceto nos componentes públicos). Manter padrão.
+3. **`useIsMobile()`** em `lib/hooks/useIsMobile.ts` — SSR-safe, começa `false`.
+4. **Não usar `httpOnly: true`** nos cookies de auth — quebra o browser client.
+5. **O cron `avaliacao` depende da migração** da coluna `avaliacao_enviada`. Sem migração = erro 500.
+6. **Rate limiting** em `/api/booking` usa Upstash Redis — sem as env vars, o endpoint falha.
+7. **`/api/auth/whoami`** é debug — remover após validar login em produção.

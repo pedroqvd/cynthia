@@ -117,6 +117,8 @@ export function LeadsKanban({ colunas, byStatus }: Props) {
           overflow: 'auto',
           flex: 1,
           paddingBottom: '1rem',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehaviorX: 'contain',
         }}
       >
         {colunas.map((col) => (
