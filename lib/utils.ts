@@ -65,6 +65,12 @@ export const STATUS_LABELS: Record<string, string> = {
 
 export const ESPECIALIDADE_LABELS: Record<string, string> = {
   estetica: 'Estética & Design do Sorriso',
-  cirurgia: 'Cirurgia & Implantes',
-  protese: 'Prótese, DTM & Reabilitação',
+  implante: 'Implantes Dentários',
+  aparelho: 'Ortodontia & Aparelho',
+  clareamento: 'Clareamento Dental',
+  protese: 'Prótese & Reabilitação',
+  canal: 'Tratamento de Canal',
+  restauracao: 'Restaurações',
+  cirurgia: 'Cirurgia Oral',
+  outro: 'Outro / Não sei',
 }

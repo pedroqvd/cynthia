@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
   const tipo = searchParams.get('tipo')
   const mes = searchParams.get('mes') // YYYY-MM
   const status = searchParams.get('status')
+  const leadId = searchParams.get('lead_id')
 
   let query = supabase
     .from('financial_entries')
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
 
   if (tipo) query = query.eq('tipo', tipo)
   if (status) query = query.eq('status', status)
+  if (leadId) query = query.eq('lead_id', leadId)
   if (mes) {
     const start = `${mes}-01`
     const end = new Date(Number(mes.split('-')[0]), Number(mes.split('-')[1]), 0)

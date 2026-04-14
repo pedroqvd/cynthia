@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { agendamentoSchema, type AgendamentoInput } from '@/lib/schemas'
+import { agendamentoSchema, ESPECIALIDADES, type AgendamentoInput } from '@/lib/schemas'
 
 function toYMD(d: Date) {
   return d.toISOString().slice(0, 10)
@@ -209,26 +209,34 @@ export function Agendamento({ imgUrl }: { imgUrl?: string }) {
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '.9rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.9rem' }} className="max-md:!grid-cols-1">
-              <FormField label="Nome completo" error={errors.nome?.message}>
-                <input {...register('nome')} placeholder="Seu nome" style={inputStyle} />
+              <FormField label="Nome completo *" error={errors.nome?.message}>
+                <input {...register('nome')} placeholder="Nome completo" style={inputStyle} />
               </FormField>
-              <FormField label="WhatsApp" error={errors.whatsapp?.message}>
-                <input {...register('whatsapp')} placeholder="+55 61 9 9999-9999" style={inputStyle} />
+              <FormField label="CPF *" error={errors.cpf?.message}>
+                <input {...register('cpf')} placeholder="000.000.000-00" style={inputStyle} />
               </FormField>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.9rem' }} className="max-md:!grid-cols-1">
-              <FormField label="E-mail (opcional)" error={errors.email?.message}>
+              <FormField label="WhatsApp *" error={errors.whatsapp?.message}>
+                <input {...register('whatsapp')} placeholder="+55 61 9 9999-9999" style={inputStyle} />
+              </FormField>
+              <FormField label="E-mail *" error={errors.email?.message}>
                 <input {...register('email')} type="email" placeholder="seu@email.com" style={inputStyle} />
               </FormField>
-              <FormField label="Especialidade de interesse" error={errors.especialidade?.message}>
-                <select {...register('especialidade')} style={inputStyle}>
-                  <option value="">Selecione...</option>
-                  <option value="estetica">Estética & Design do Sorriso</option>
-                  <option value="cirurgia">Cirurgia & Implantes</option>
-                  <option value="protese">Prótese, DTM & Reabilitação</option>
-                  <option value="outro">Outro / Não sei</option>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.9rem' }} className="max-md:!grid-cols-1">
+              <FormField label="Especialidade de interesse *" error={errors.especialidade?.message}>
+                <select {...register('especialidade')} style={selectStyle}>
+                  <option value="" style={optionStyle}>Selecione...</option>
+                  {ESPECIALIDADES.map((e) => (
+                    <option key={e.value} value={e.value} style={optionStyle}>{e.label}</option>
+                  ))}
                 </select>
+              </FormField>
+              <FormField label="Convênio (opcional)" error={errors.convenio?.message}>
+                <input {...register('convenio')} placeholder="Nome do convênio, se houver" style={inputStyle} />
               </FormField>
             </div>
 
@@ -274,11 +282,11 @@ export function Agendamento({ imgUrl }: { imgUrl?: string }) {
                     <select
                       value={selectedSlot}
                       onChange={(e) => setSelectedSlot(e.target.value)}
-                      style={inputStyle}
+                      style={selectStyle}
                     >
-                      <option value="">Escolha um horário...</option>
+                      <option value="" style={optionStyle}>Escolha um horário...</option>
                       {slots.map((slot) => (
-                        <option key={slot} value={slot}>
+                        <option key={slot} value={slot} style={optionStyle}>
                           {new Date(slot).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
                         </option>
                       ))}
@@ -399,4 +407,17 @@ const inputStyle: React.CSSProperties = {
   fontFamily: 'Jost, sans-serif',
   outline: 'none',
   transition: 'border-color .2s',
+}
+
+// Select usa fundo sólido para garantir legibilidade das options no popup nativo do browser
+const selectStyle: React.CSSProperties = {
+  ...inputStyle,
+  background: '#1a3a2a',
+  color: '#F5F0E6',
+  cursor: 'pointer',
+}
+
+const optionStyle: React.CSSProperties = {
+  background: '#1a3a2a',
+  color: '#F5F0E6',
 }
