@@ -130,10 +130,12 @@ export async function POST(request: NextRequest) {
     .from('leads')
     .insert({
       nome: data.nome,
+      cpf: (data as Record<string, unknown>)['cpf'] as string || null,
       whatsapp: data.whatsapp,
       email: data.email || null,
       especialidade: data.especialidade || null,
       urgencia: data.urgencia || null,
+      convenio: (data as Record<string, unknown>)['convenio'] as string || null,
       origem: (body as Record<string, string>)['origem'] ?? 'site',
       status: 'novo',
       observacoes: data.observacoes || null,

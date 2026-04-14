@@ -56,6 +56,13 @@ export async function PATCH(
     return apiError(parsed.error.issues[0].message, 422)
   }
 
+  // Captura valores atuais para registrar no histórico
+  const { data: current } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', params.id)
+    .single()
+
   const { data, error } = await supabase
     .from('leads')
     .update({ ...parsed.data, updated_at: new Date().toISOString() })
@@ -65,12 +72,22 @@ export async function PATCH(
 
   if (error) return apiError(error.message, 500)
 
-  // Log de atividade
+  // Constrói diff campo a campo (anterior → novo)
+  const alteracoes: Record<string, { anterior: unknown; novo: unknown }> = {}
+  if (current) {
+    for (const [campo, novoValor] of Object.entries(parsed.data)) {
+      const valorAnterior = (current as Record<string, unknown>)[campo]
+      if (valorAnterior !== novoValor) {
+        alteracoes[campo] = { anterior: valorAnterior ?? null, novo: novoValor ?? null }
+      }
+    }
+  }
+
   await supabase.from('activity_log').insert({
     lead_id: params.id,
     user_id: user.id,
     acao: 'lead_atualizado',
-    detalhes: parsed.data as Record<string, unknown>,
+    detalhes: { alteracoes },
   })
 
   return apiResponse(data)

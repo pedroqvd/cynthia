@@ -7,6 +7,7 @@ export interface Database {
         Row: {
           id: string
           nome: string
+          cpf: string | null
           whatsapp: string
           email: string | null
           especialidade: string | null
@@ -15,6 +16,9 @@ export interface Database {
           status: 'novo' | 'em_contato' | 'agendado' | 'proposta' | 'fechado'
           ticket_estimado: number | null
           observacoes: string | null
+          data_nascimento: string | null
+          convenio: string | null
+          indicado_por: string | null
           created_at: string
           updated_at: string
           last_seen: string | null
@@ -22,6 +26,7 @@ export interface Database {
         Insert: {
           id?: string
           nome: string
+          cpf?: string | null
           whatsapp: string
           email?: string | null
           especialidade?: string | null
@@ -30,6 +35,9 @@ export interface Database {
           status?: 'novo' | 'em_contato' | 'agendado' | 'proposta' | 'fechado'
           ticket_estimado?: number | null
           observacoes?: string | null
+          data_nascimento?: string | null
+          convenio?: string | null
+          indicado_por?: string | null
           created_at?: string
           updated_at?: string
           last_seen?: string | null
@@ -37,6 +45,7 @@ export interface Database {
         Update: {
           id?: string
           nome?: string
+          cpf?: string | null
           whatsapp?: string
           email?: string | null
           especialidade?: string | null
@@ -45,6 +54,9 @@ export interface Database {
           status?: 'novo' | 'em_contato' | 'agendado' | 'proposta' | 'fechado'
           ticket_estimado?: number | null
           observacoes?: string | null
+          data_nascimento?: string | null
+          convenio?: string | null
+          indicado_por?: string | null
           updated_at?: string
           last_seen?: string | null
         }
