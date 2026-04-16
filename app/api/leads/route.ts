@@ -25,41 +25,84 @@ export async function GET(request: NextRequest) {
   const search = url.searchParams.get('q')
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50'), 100)
 
-  // Export CSV — sem paginação, retorna todos
+  // Export CSV — com streaming para grandes datasets
   if (format === 'csv') {
-    const { data: allLeads, error } = await supabase
-      .from('leads')
-      .select('id, nome, whatsapp, email, especialidade, urgencia, origem, status, ticket_estimado, observacoes, created_at, last_seen')
-      .order('created_at', { ascending: false })
-      .limit(5000)
-
-    if (error) return apiError(error.message, 500)
-
     const headers = ['ID', 'Nome', 'WhatsApp', 'Email', 'Especialidade', 'Urgência', 'Origem', 'Status', 'Ticket (R$)', 'Observações', 'Criado em', 'Último contato']
-    const rows = (allLeads ?? []).map((l) => [
-      l.id,
-      l.nome,
-      l.whatsapp,
-      l.email ?? '',
-      l.especialidade ?? '',
-      l.urgencia ?? '',
-      l.origem ?? '',
-      l.status,
-      l.ticket_estimado ?? '',
-      (l.observacoes ?? '').replace(/"/g, '""'),
-      l.created_at ? new Date(l.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '',
-      l.last_seen ? new Date(l.last_seen).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '',
-    ])
+    const headerRow = headers.map((cell) => `"${cell}"`).join(',')
 
-    const csv = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${cell}"`).join(','))
-      .join('\r\n')
+    const encoder = new TextEncoder()
+    let bytesStreamed = 0
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          // Send BOM for Excel UTF-8 recognition
+          const bom = '\uFEFF'
+          controller.enqueue(encoder.encode(bom + headerRow + '\r\n'))
+          bytesStreamed += bom.length + headerRow.length + 2
+
+          // Stream data in chunks to avoid memory issues on large exports
+          const pageSize = 500
+          let offset = 0
+          let hasMore = true
+
+          while (hasMore) {
+            const { data: pageLeads, error } = await supabase
+              .from('leads')
+              .select('id, nome, whatsapp, email, especialidade, urgencia, origem, status, ticket_estimado, observacoes, created_at, last_seen')
+              .order('created_at', { ascending: false })
+              .range(offset, offset + pageSize - 1)
+
+            if (error) {
+              controller.error(new Error(error.message))
+              return
+            }
+
+            if (!pageLeads || pageLeads.length === 0) {
+              hasMore = false
+              break
+            }
+
+            // Format each row
+            for (const l of pageLeads) {
+              const row = [
+                l.id,
+                l.nome,
+                l.whatsapp,
+                l.email ?? '',
+                l.especialidade ?? '',
+                l.urgencia ?? '',
+                l.origem ?? '',
+                l.status,
+                l.ticket_estimado ?? '',
+                (l.observacoes ?? '').replace(/"/g, '""'),
+                l.created_at ? new Date(l.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '',
+                l.last_seen ? new Date(l.last_seen).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '',
+              ]
+              const rowCsv = row.map((cell) => `"${cell}"`).join(',') + '\r\n'
+              controller.enqueue(encoder.encode(rowCsv))
+              bytesStreamed += rowCsv.length
+            }
+
+            offset += pageSize
+            if (pageLeads.length < pageSize) {
+              hasMore = false
+            }
+          }
+
+          controller.close()
+        } catch (err) {
+          controller.error(err)
+        }
+      },
+    })
 
     const today = new Date().toISOString().slice(0, 10)
-    return new Response('\uFEFF' + csv, {  // BOM para Excel reconhecer UTF-8
+    return new Response(stream, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="leads-${today}.csv"`,
+        'Transfer-Encoding': 'chunked',
       },
     })
   }
