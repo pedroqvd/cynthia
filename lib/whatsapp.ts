@@ -103,6 +103,16 @@ export async function sendTemplateMessage({
   return res.json()
 }
 
+/** Comparação em tempo constante — previne timing attacks na validação de assinatura */
+function timingSafeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  }
+  return diff === 0
+}
+
 /** Valida assinatura HMAC-SHA256 do webhook da Meta */
 export async function validateWebhookSignature(
   body: string,
@@ -125,13 +135,12 @@ export async function validateWebhookSignature(
     .join('')
 
   const receivedSignature = signature.replace('sha256=', '')
-  return expectedSignature === receivedSignature
+  return timingSafeEqualHex(expectedSignature, receivedSignature)
 }
 
 /** Normaliza número para formato internacional: 5561999999999 */
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, '')
-  // Adiciona código do Brasil se não tiver
   if (digits.length === 11 && digits.startsWith('0')) {
     return `55${digits.slice(1)}`
   }

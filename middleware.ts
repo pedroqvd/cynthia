@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+/** Comparação em tempo constante para secrets — previne timing attacks */
+function timingSafeEqualStr(a: string, b: string): boolean {
+  const maxLen = Math.max(a.length, b.length)
+  const pa = a.padEnd(maxLen, '\0')
+  const pb = b.padEnd(maxLen, '\0')
+  let diff = a.length !== b.length ? 1 : 0
+  for (let i = 0; i < maxLen; i++) {
+    diff |= pa.charCodeAt(i) ^ pb.charCodeAt(i)
+  }
+  return diff === 0
+}
+
 /**
  * Protege todas as rotas /admin/* exceto /admin/login e /admin/reset-password.
  *
@@ -11,10 +23,11 @@ import { createServerClient } from '@supabase/ssr'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Rotas de cron: valida secret header
+  // Rotas de cron: valida secret header com comparação em tempo constante
   if (pathname.startsWith('/api/cron/')) {
-    const secret = request.headers.get('authorization')
-    if (secret !== `Bearer ${process.env.CRON_SECRET}`) {
+    const provided = request.headers.get('authorization') ?? ''
+    const expected = `Bearer ${process.env.CRON_SECRET ?? ''}`
+    if (!timingSafeEqualStr(provided, expected)) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
     return NextResponse.next()
@@ -34,7 +47,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
 
-    // Padrão canônico Supabase SSR — não inserir código entre createServerClient e getSession()
     let supabaseResponse = NextResponse.next({ request })
 
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
@@ -52,8 +64,6 @@ export async function middleware(request: NextRequest) {
       },
     })
 
-    // getUser() valida o JWT diretamente na API do Supabase (mais seguro e resiliente que getSession).
-    // Evita expiração de sessão prematura após novos deploys.
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
