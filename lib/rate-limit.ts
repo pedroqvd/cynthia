@@ -1,7 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
-// Instância singleton do Redis
 let redis: Redis | null = null
 let ratelimit: Ratelimit | null = null
 
@@ -37,7 +36,7 @@ export function getClientIP(request: Request): string {
   )
 }
 
-/** Verifica e aplica rate limit; retorna null se OK, Response 429 se excedido */
+/** Verifica e aplica rate limit; retorna null se OK, Response 429/503 se bloqueado */
 export async function checkRateLimit(
   identifier: string
 ): Promise<Response | null> {
@@ -59,8 +58,13 @@ export async function checkRateLimit(
         }
       )
     }
-  } catch {
-    // Se Redis não estiver configurado, não bloqueia
+  } catch (error) {
+    // Fail-closed: se Redis indisponível, bloqueia para proteger dados de pacientes
+    console.error('[rate-limit] Redis indisponível — bloqueando por segurança:', error)
+    return new Response(
+      JSON.stringify({ data: null, error: 'Serviço temporariamente indisponível. Tente novamente em instantes.' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 
   return null

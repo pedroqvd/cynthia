@@ -141,17 +141,17 @@ async function processIncomingMessage(
   })
 }
 
-// ── Atualiza status de mensagens enviadas ─────────────────────────
-async function handleStatusUpdates(
-  statuses: WppStatus[]
-) {
+// ── Atualiza status de mensagens enviadas (parallelizado) ─────────
+async function handleStatusUpdates(statuses: WppStatus[]) {
   const supabase = createAdminClient()
-  for (const s of statuses) {
-    await supabase
-      .from('messages')
-      .update({ status: s.status as 'sent' | 'delivered' | 'read' | 'failed' })
-      .eq('whatsapp_message_id', s.id)
-  }
+  await Promise.all(
+    statuses.map(s =>
+      supabase
+        .from('messages')
+        .update({ status: s.status as 'sent' | 'delivered' | 'read' | 'failed' })
+        .eq('whatsapp_message_id', s.id)
+    )
+  )
 }
 
 // ── Tipos do payload da Meta ──────────────────────────────────────
