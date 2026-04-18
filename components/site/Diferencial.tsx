@@ -54,7 +54,7 @@ export function Diferencial() {
 
       <div
         ref={ref}
-        className="reveal"
+        className="reveal max-md:!grid-cols-1"
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1px 1fr 1px 1fr',
