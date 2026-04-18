@@ -89,7 +89,7 @@ export function LeadsKanban({ colunas, byStatus }: Props) {
           body: JSON.stringify({ status: targetColuna }),
         })
         if (!res.ok) throw new Error()
-        toast.success(`Lead movido para "${colunas.find((c) => c.id === targetColuna)?.label}"`)
+        toast.success(`Paciente movido para "${colunas.find((c) => c.id === targetColuna)?.label}"`)
       } catch {
         // Reverte
         setData((prev) => ({
@@ -97,7 +97,7 @@ export function LeadsKanban({ colunas, byStatus }: Props) {
           [targetColuna]: prev[targetColuna].filter((l) => l.id !== leadId),
           [sourceColuna]: [lead, ...prev[sourceColuna]],
         }))
-        toast.error('Erro ao mover lead. Tente novamente.')
+        toast.error('Erro ao mover paciente. Tente novamente.')
       }
     },
     [data, findColuna, colunas]

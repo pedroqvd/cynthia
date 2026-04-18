@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { LeadProfile } from '@/components/admin/LeadProfile'
 
-export const metadata: Metadata = { title: 'Perfil do Lead' }
+export const metadata: Metadata = { title: 'Ficha do Paciente' }
 export const dynamic = 'force-dynamic'
 
 async function getLead(id: string) {
@@ -36,7 +36,7 @@ export default async function LeadPage({ params }: { params: { id: string } }) {
       {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1.5rem', fontSize: '.8rem', color: '#7a7570' }}>
         <Link href="/admin/leads" style={{ color: '#7a7570', textDecoration: 'none' }}>
-          Leads / CRM
+          Pacientes
         </Link>
         <span>›</span>
         <span style={{ color: '#0f0e0c' }}>{lead.nome}</span>

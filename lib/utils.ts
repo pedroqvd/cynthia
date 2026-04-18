@@ -56,11 +56,11 @@ export const URGENCIA_LABELS: Record<string, string> = {
 }
 
 export const STATUS_LABELS: Record<string, string> = {
-  novo: 'Novo Lead',
+  novo: 'Primeiro Contato',
   em_contato: 'Em Contato',
   agendado: 'Agendado',
   proposta: 'Proposta Enviada',
-  fechado: 'Fechado',
+  fechado: 'Paciente Ativo',
 }
 
 export const ESPECIALIDADE_LABELS: Record<string, string> = {

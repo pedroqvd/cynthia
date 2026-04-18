@@ -12,6 +12,7 @@ import {
   whatsAppUrl,
 } from '@/lib/utils'
 import { ESPECIALIDADES } from '@/lib/schemas'
+import { PatientRecordsTab } from './PatientRecordsTab'
 
 type Lead = {
   id: string
@@ -75,11 +76,12 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
   const [editingObs, setEditingObs] = useState(false)
   const [obsText, setObsText] = useState(lead.observacoes ?? '')
   const [savingObs, setSavingObs] = useState(false)
-  const [activeTab, setActiveTab] = useState<'mensagens' | 'consultas' | 'atividade' | 'financeiro'>('mensagens')
+  const [activeTab, setActiveTab] = useState<'mensagens' | 'consultas' | 'atividade' | 'financeiro' | 'prontuario'>('mensagens')
   const [financialEntries, setFinancialEntries] = useState<FinancialEntry[]>([])
   const [loadingFinancial, setLoadingFinancial] = useState(false)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [fieldValue, setFieldValue] = useState<string>('')
+  const [sideSummary, setSideSummary] = useState<{ receitas: number; despesas: number } | null>(null)
 
   const fetchFinancial = useCallback(async () => {
     setLoadingFinancial(true)
@@ -96,6 +98,24 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
   useEffect(() => {
     if (activeTab === 'financeiro' && financialEntries.length === 0) fetchFinancial()
   }, [activeTab, fetchFinancial, financialEntries.length])
+
+  useEffect(() => {
+    fetch(`/api/financial/entries?lead_id=${lead.id}`)
+      .then((r) => r.json())
+      .then((j) => {
+        const entries = (j.data ?? j) as { tipo: string; valor: number; status: string }[]
+        const confirmed = entries.filter((e) => e.status === 'confirmado')
+        setSideSummary({
+          receitas: confirmed.filter((e) => e.tipo === 'receita').reduce((s, e) => s + Number(e.valor), 0),
+          despesas: confirmed.filter((e) => e.tipo === 'despesa').reduce((s, e) => s + Number(e.valor), 0),
+        })
+      })
+      .catch(() => {})
+  }, [lead.id])
+
+  const proximaConsulta = [...lead.appointments]
+    .filter((a) => a.status !== 'cancelado' && new Date(a.data_hora) > new Date())
+    .sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime())[0] ?? null
 
   async function patch(fields: Record<string, unknown>) {
     const res = await fetch(`/api/leads/${lead.id}`, {
@@ -145,14 +165,14 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
   }
 
   async function handleDelete() {
-    if (!confirm(`Excluir o lead "${lead.nome}" permanentemente? Esta ação não pode ser desfeita.`)) return
+    if (!confirm(`Excluir o paciente "${lead.nome}" permanentemente? Esta ação não pode ser desfeita.`)) return
     try {
       const res = await fetch(`/api/leads/${lead.id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Lead excluído.')
+      toast.success('Paciente excluído.')
       router.push('/admin/leads')
     } catch {
-      toast.error('Erro ao excluir lead.')
+      toast.error('Erro ao excluir paciente.')
     }
   }
 
@@ -229,7 +249,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
         {/* Tabs */}
         <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', overflow: 'hidden' }}>
           <div style={{ display: 'flex', borderBottom: '1px solid #e5e5e3', overflowX: 'auto' }}>
-            {(['mensagens', 'consultas', 'financeiro', 'atividade'] as const).map((tab) => (
+            {(['mensagens', 'consultas', 'prontuario', 'financeiro', 'atividade'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -241,15 +261,16 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                   marginBottom: '-1px',
                 }}
               >
-                {tab === 'mensagens' && `Mensagens (${lead.messages.length})`}
-                {tab === 'consultas' && `Consultas (${lead.appointments.length})`}
+                {tab === 'mensagens'  && `Mensagens (${lead.messages.length})`}
+                {tab === 'consultas'  && `Consultas (${lead.appointments.length})`}
+                {tab === 'prontuario' && 'Prontuário'}
                 {tab === 'financeiro' && 'Financeiro'}
-                {tab === 'atividade' && `Atividade (${lead.activity_log.length})`}
+                {tab === 'atividade'  && `Atividade (${lead.activity_log.length})`}
               </button>
             ))}
           </div>
 
-          <div style={{ padding: '1rem', maxHeight: '460px', overflowY: 'auto' }}>
+          <div style={{ padding: '1rem', maxHeight: activeTab === 'prontuario' ? 'none' : '460px', overflowY: activeTab === 'prontuario' ? 'visible' : 'auto' }}>
 
             {/* Mensagens */}
             {activeTab === 'mensagens' && (
@@ -350,6 +371,11 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                     </div>
             )}
 
+            {/* Prontuário */}
+            {activeTab === 'prontuario' && (
+              <PatientRecordsTab leadId={lead.id} appointments={lead.appointments} />
+            )}
+
             {/* Atividade */}
             {activeTab === 'atividade' && (
               lead.activity_log.length === 0
@@ -392,6 +418,51 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
 
       {/* Sidebar */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+        {/* Contato Rápido */}
+        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
+          <SectionTitle>Contato rápido</SectionTitle>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+            <a
+              href={whatsAppUrl(lead.whatsapp, `Olá ${lead.nome.split(' ')[0]}!`)}
+              target="_blank" rel="noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#25D36615', border: '1px solid #25D36630', borderRadius: '2px', fontSize: '.78rem', fontWeight: 500, color: '#1a9e4d', textDecoration: 'none' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 1.5C4.858 1.5 1.5 4.858 1.5 9c0 1.306.34 2.532.935 3.595L1.5 16.5l3.99-1.012A7.43 7.43 0 009 16.5c4.142 0 7.5-3.358 7.5-7.5S13.142 1.5 9 1.5z" fill="currentColor" /></svg>
+              Enviar WhatsApp
+            </a>
+            <a
+              href={`/admin/agenda`}
+              style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#b8965a12', border: '1px solid #b8965a30', borderRadius: '2px', fontSize: '.78rem', fontWeight: 500, color: '#b8965a', textDecoration: 'none' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M5 1v4M13 1v4M1 7h16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+              Agendar Consulta
+            </a>
+            {lead.email && (
+              <a
+                href={`mailto:${lead.email}`}
+                style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#3b82f612', border: '1px solid #3b82f630', borderRadius: '2px', fontSize: '.78rem', fontWeight: 500, color: '#3b82f6', textDecoration: 'none' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M1 4l8 6 8-6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                Enviar E-mail
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Próxima Consulta */}
+        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
+          <SectionTitle>Próxima consulta</SectionTitle>
+          {proximaConsulta ? (
+            <div style={{ padding: '.75rem', background: '#f5f4f2', borderRadius: '2px', borderLeft: '3px solid #b8965a' }}>
+              <div style={{ fontSize: '.85rem', fontWeight: 500, color: '#0f0e0c' }}>{proximaConsulta.procedimento}</div>
+              <div style={{ fontSize: '.75rem', color: '#7a7570', marginTop: '.25rem' }}>{formatDateTime(proximaConsulta.data_hora)}</div>
+              <div style={{ fontSize: '.68rem', marginTop: '.35rem', color: '#b8965a', textTransform: 'uppercase', letterSpacing: '.06em' }}>{proximaConsulta.status}</div>
+            </div>
+          ) : (
+            <p style={{ fontSize: '.78rem', color: '#7a7570', margin: 0 }}>Nenhuma consulta futura agendada.</p>
+          )}
+        </div>
 
         {/* Status */}
         <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
@@ -463,6 +534,29 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
             </div>
           </div>
         </div>
+
+        {/* Resumo Financeiro */}
+        {sideSummary !== null && (
+          <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
+            <SectionTitle>Resumo financeiro</SectionTitle>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.78rem' }}>
+                <span style={{ color: '#7a7570' }}>Receitas confirmadas</span>
+                <span style={{ color: '#10b981', fontWeight: 500 }}>R$ {sideSummary.receitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.78rem' }}>
+                <span style={{ color: '#7a7570' }}>Despesas confirmadas</span>
+                <span style={{ color: '#ef4444', fontWeight: 500 }}>R$ {sideSummary.despesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.82rem', borderTop: '1px solid #f0f0ee', paddingTop: '.3rem', marginTop: '.1rem' }}>
+                <span style={{ color: '#0f0e0c', fontWeight: 500 }}>Saldo</span>
+                <span style={{ color: sideSummary.receitas >= sideSummary.despesas ? '#b8965a' : '#ef4444', fontWeight: 600 }}>
+                  R$ {(sideSummary.receitas - sideSummary.despesas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Observações */}
         <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>

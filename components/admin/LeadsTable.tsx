@@ -49,7 +49,11 @@ export function LeadsTable({ leads: initialLeads }: Props) {
     if (search) {
       const q = search.toLowerCase()
       list = list.filter(
-        (l) => l.nome.toLowerCase().includes(q) || l.whatsapp.includes(q) || (l.email ?? '').toLowerCase().includes(q)
+        (l) =>
+          l.nome.toLowerCase().includes(q) ||
+          l.whatsapp.includes(q) ||
+          (l.email ?? '').toLowerCase().includes(q) ||
+          (l.cpf ?? '').replace(/\D/g, '').includes(q.replace(/\D/g, ''))
       )
     }
     if (filterStatus) list = list.filter((l) => l.status === filterStatus)
@@ -102,7 +106,7 @@ export function LeadsTable({ leads: initialLeads }: Props) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, WhatsApp, e-mail…"
+            placeholder="Buscar por nome, WhatsApp, e-mail, CPF…"
             style={{
               width: '100%', paddingLeft: '30px', paddingRight: '10px',
               height: '36px', border: '1px solid #e5e5e3', borderRadius: '2px',
@@ -165,7 +169,7 @@ export function LeadsTable({ leads: initialLeads }: Props) {
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: '#7a7570', fontSize: '.82rem' }}>
-                  Nenhum lead encontrado.
+                  Nenhum paciente encontrado.
                 </td>
               </tr>
             ) : (

@@ -3,15 +3,15 @@ import { createClient } from '@/lib/supabase/server'
 import { LeadsKanban } from '@/components/admin/LeadsKanban'
 import { LeadsViewToggle } from '@/components/admin/LeadsViewToggle'
 
-export const metadata: Metadata = { title: 'Leads / CRM' }
+export const metadata: Metadata = { title: 'Pacientes' }
 export const dynamic = 'force-dynamic'
 
 const COLUNAS = [
-  { id: 'novo', label: 'Novo Lead' },
+  { id: 'novo', label: 'Primeiro Contato' },
   { id: 'em_contato', label: 'Em Contato' },
   { id: 'agendado', label: 'Agendado' },
   { id: 'proposta', label: 'Proposta Enviada' },
-  { id: 'fechado', label: 'Fechado' },
+  { id: 'fechado', label: 'Paciente Ativo' },
 ]
 
 async function getLeads() {

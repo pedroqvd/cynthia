@@ -30,7 +30,7 @@ const LINKS = [
   },
   {
     href: '/admin/leads',
-    label: 'Leads / CRM',
+    label: 'Pacientes',
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
         <circle cx="9" cy="6" r="3.5" stroke="currentColor" strokeWidth="1.2"/>

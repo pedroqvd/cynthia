@@ -7,7 +7,7 @@ import { apiResponse, apiError } from '@/lib/utils'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_SIZE_MB = 5
-const ALLOWED_BUCKETS = ['before_after', 'testimonials', 'site']
+const ALLOWED_BUCKETS = ['before_after', 'testimonials', 'site', 'patient_images']
 
 export async function POST(request: NextRequest) {
   // Verifica autenticação pelo client do usuário
