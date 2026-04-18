@@ -191,7 +191,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
         {/* Cabeçalho */}
-        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.5rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: 'clamp(.875rem, 3vw, 1.5rem)' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{
@@ -330,13 +330,14 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                   ? <EmptyState text="Nenhum lançamento financeiro vinculado a este paciente." />
                   : <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       {/* Cards resumo */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                      <div className="fin-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
                         <SummaryCard label="Receitas confirmadas" value={`R$ ${totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} color="#10b981" />
                         <SummaryCard label="Despesas confirmadas" value={`R$ ${totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} color="#ef4444" />
                         <SummaryCard label="Saldo" value={`R$ ${(totalReceitas - totalDespesas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} color={totalReceitas >= totalDespesas ? '#b8965a' : '#ef4444'} />
                       </div>
                       {/* Tabela */}
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.8rem' }}>
+                      <div className="table-scroll-wrap">
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.8rem', minWidth: '500px' }}>
                         <thead>
                           <tr style={{ borderBottom: '1px solid #e5e5e3' }}>
                             {['Data', 'Descrição', 'Categoria', 'Valor', 'Status'].map((h) => (
@@ -368,6 +369,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                           ))}
                         </tbody>
                       </table>
+                      </div>
                     </div>
             )}
 

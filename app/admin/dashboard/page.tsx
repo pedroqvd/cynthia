@@ -104,10 +104,10 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="admin-page" style={{ padding: 'clamp(1rem, 3vw, 2rem)' }}>
 
       {/* Cabeçalho com atalhos */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '.75rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '.25rem' }}>
             Dashboard
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Cards de métricas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         {cards.map((card) => (
           <div
             key={card.label}
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
       <DashboardCharts leadsRecentes={metrics.leadsRecentes} funil={metrics.funil} />
 
       {/* Grid inferior */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
 
         {/* Próximas consultas */}
         <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.5rem' }}>

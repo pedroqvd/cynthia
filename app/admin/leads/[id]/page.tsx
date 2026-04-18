@@ -32,7 +32,7 @@ export default async function LeadPage({ params }: { params: { id: string } }) {
   if (!lead) notFound()
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1100px' }}>
+    <div className="admin-page" style={{ padding: 'clamp(1rem, 3vw, 2rem)', maxWidth: '1100px' }}>
       {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1.5rem', fontSize: '.8rem', color: '#7a7570' }}>
         <Link href="/admin/leads" style={{ color: '#7a7570', textDecoration: 'none' }}>

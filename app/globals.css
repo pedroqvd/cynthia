@@ -75,6 +75,71 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Admin panel — mobile responsive ────────────────────────────── */
+
+/* iOS Safari: prevent input zoom (font-size < 16px triggers zoom) */
+@media (max-width: 768px) {
+  .admin-panel input,
+  .admin-panel select,
+  .admin-panel textarea {
+    font-size: max(16px, 1em) !important;
+    min-height: 44px;
+  }
+
+  /* Buttons: min touch target */
+  .admin-panel button {
+    min-height: 36px;
+  }
+
+  /* Page padding: reduce on mobile */
+  .admin-page {
+    padding: 1rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Hide non-critical sidebar text on tiny screens */
+  .admin-sidebar-label {
+    display: none !important;
+  }
+
+  /* Stack 3-col financial cards */
+  .fin-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Kanban hint on mobile */
+  .kanban-hint {
+    display: flex !important;
+  }
+
+  /* Tables: horizontal scroll with momentum */
+  .table-scroll-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: none;
+  }
+
+  /* Reduce gap on grids */
+  .admin-panel .mob-gap-sm {
+    gap: .5rem !important;
+  }
+}
+
+/* Tablet (641-900px): keep sidebar but tighten layout */
+@media (max-width: 900px) and (min-width: 641px) {
+  .admin-page {
+    padding: 1.25rem !important;
+  }
+}
+
+/* Safe area support for modals (iPhone notch) */
+.modal-safe {
+  padding-top: max(1.5rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
 @layer components {
   /* Scroll reveal */
   .reveal {

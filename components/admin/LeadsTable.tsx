@@ -109,7 +109,7 @@ export function LeadsTable({ leads: initialLeads }: Props) {
             placeholder="Buscar por nome, WhatsApp, e-mail, CPF…"
             style={{
               width: '100%', paddingLeft: '30px', paddingRight: '10px',
-              height: '36px', border: '1px solid #e5e5e3', borderRadius: '2px',
+              height: '44px', border: '1px solid #e5e5e3', borderRadius: '2px',
               fontSize: '.82rem', outline: 'none', boxSizing: 'border-box',
             }}
           />
@@ -145,8 +145,8 @@ export function LeadsTable({ leads: initialLeads }: Props) {
       </div>
 
       {/* Tabela */}
-      <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.82rem' }}>
+      <div className="table-scroll-wrap" style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', overflow: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.82rem', minWidth: '700px' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #e5e5e3', background: '#fafaf9' }}>
               <Th onClick={() => toggleSort('nome')}>
@@ -261,7 +261,7 @@ function Th({ children, onClick }: { children: React.ReactNode; onClick?: () => 
 }
 
 const selectStyle: React.CSSProperties = {
-  height: '36px', border: '1px solid #e5e5e3', borderRadius: '2px',
+  height: '44px', border: '1px solid #e5e5e3', borderRadius: '2px',
   fontSize: '.8rem', padding: '0 .75rem', outline: 'none', background: '#fff',
   color: '#0f0e0c', cursor: 'pointer',
 }

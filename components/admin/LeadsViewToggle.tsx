@@ -18,8 +18,8 @@ export function LeadsViewToggle({ leads, colunas, byStatus }: Props) {
   const [view, setView] = useState<'kanban' | 'tabela'>('kanban')
 
   return (
-    <div style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+    <div className="admin-page" style={{ padding: 'clamp(1rem, 3vw, 2rem)', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem', gap: '.75rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 500, color: '#0f0e0c' }}>Pacientes</h1>
           <p style={{ fontSize: '.85rem', color: '#7a7570' }}>{leads.length} paciente{leads.length !== 1 ? 's' : ''} no total</p>

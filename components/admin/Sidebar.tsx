@@ -103,10 +103,10 @@ export function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  // Auto-collapse on mobile viewports
+  // Auto-collapse on mobile/tablet viewports
   useEffect(() => {
     function check() {
-      if (window.innerWidth < 640) setCollapsed(true)
+      setCollapsed(window.innerWidth < 900)
     }
     check()
     window.addEventListener('resize', check)
@@ -172,7 +172,7 @@ export function AdminSidebar() {
       )}
 
       {/* Navegação */}
-      <nav style={{ flex: 1, padding: '1rem 0', overflow: 'hidden' }}>
+      <nav style={{ flex: 1, padding: '1rem 0', overflowY: 'auto', overflowX: 'hidden' }}>
         {!isLoginPage && LINKS.map((link) => {
           const active = pathname.startsWith(link.href)
           return (

@@ -413,7 +413,7 @@ function PatientImages({ leadId }: { leadId: string }) {
       {images.length === 0 ? (
         <EmptyState text="Nenhuma imagem. Clique em '+ Adicionar Imagem' para enviar." />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: '.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '.75rem' }}>
           {images.map((img) => {
             const color = TIPO_COLORS[img.tipo] ?? '#7a7570'
             return (
@@ -442,9 +442,10 @@ function PatientImages({ leadId }: { leadId: string }) {
       {preview && (
         <div
           onClick={() => setPreview(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.88)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', cursor: 'zoom-out' }}
+          className="modal-safe"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.88)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
         >
-          <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', display: 'flex', gap: '.75rem' }}>
+          <div style={{ position: 'absolute', top: 'max(1.5rem, env(safe-area-inset-top))', right: 'max(1rem, env(safe-area-inset-right))', display: 'flex', gap: '.75rem' }}>
             <button
               onClick={(e) => { e.stopPropagation(); deleteImage(preview) }}
               style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '.4rem .9rem', cursor: 'pointer', fontSize: '.78rem' }}
@@ -458,9 +459,9 @@ function PatientImages({ leadId }: { leadId: string }) {
               Fechar ✕
             </button>
           </div>
-          <div style={{ maxWidth: '90vw', maxHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ maxWidth: 'min(90vw, 800px)', maxHeight: '75vh', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview.url} alt={preview.nome} style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: '4px' }} onClick={(e) => e.stopPropagation()} />
+            <img src={preview.url} alt={preview.nome} style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain', borderRadius: '4px' }} onClick={(e) => e.stopPropagation()} />
             <div style={{ color: '#fff', textAlign: 'center' }}>
               <div style={{ fontWeight: 500, fontSize: '.95rem' }}>{preview.nome}</div>
               <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.55)', marginTop: '.25rem' }}>
