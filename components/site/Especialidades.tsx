@@ -64,7 +64,7 @@ export function Especialidades() {
     <section
       id="especialidades"
       style={{ padding: '8rem 5rem', background: '#F5F0E6' }}
-      className="max-md:!px-6 max-md:!py-20"
+      className="max-md:!px-6 max-md:!py-14"
     >
       <div className="section-eyebrow">Especialidades</div>
       <h2

@@ -35,7 +35,7 @@ export function Diferencial() {
         borderTop: '1px solid rgba(201,169,110,0.3)',
         borderBottom: '1px solid rgba(201,169,110,0.3)',
       }}
-      className="max-md:!px-6 max-md:!py-20"
+      className="max-md:!px-6 max-md:!py-14"
     >
       <div className="section-eyebrow">Por que é diferente</div>
       <h2
@@ -69,7 +69,7 @@ export function Diferencial() {
               style={{
                 padding: i === 0 ? '0 3.5rem 0 0' : i === 2 ? '0 0 0 3.5rem' : '0 3.5rem',
               }}
-              className="max-md:!p-0 max-md:mb-10"
+              className="max-md:!p-0 max-md:!mb-12"
             >
               <div
                 style={{

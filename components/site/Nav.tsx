@@ -130,43 +130,55 @@ export function Nav() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '2rem',
+            gap: '1.75rem',
           }}
           onClick={() => setMobileOpen(false)}
         >
+          {/* Linha decorativa */}
+          <div style={{ width: '32px', height: '1px', background: '#C9A96E', marginBottom: '.5rem' }} />
+
           {LINKS.map((l) => (
             <a
               key={l.href}
               href={l.href}
               style={{
                 fontFamily: 'Cormorant Garamond, Georgia, serif',
-                fontSize: '2rem',
+                fontSize: '1.9rem',
                 fontWeight: 300,
                 color: '#1C1C1C',
                 textDecoration: 'none',
                 letterSpacing: '.04em',
+                lineHeight: 1,
               }}
             >
               {l.label}
             </a>
           ))}
+
+          {/* Separador */}
+          <div style={{ width: '32px', height: '1px', background: '#C9A96E', margin: '.25rem 0' }} />
+
           <a
             href="/agendamento"
             style={{
-              fontSize: '.85rem',
+              fontSize: '.78rem',
               fontWeight: 500,
-              letterSpacing: '.08em',
+              letterSpacing: '.1em',
               textTransform: 'uppercase',
               color: '#F5F0E6',
               background: '#1B6B5A',
-              padding: '.9rem 2.5rem',
+              padding: '1rem 2.5rem',
               borderRadius: '3px',
               textDecoration: 'none',
-              marginTop: '1rem',
             }}
           >
             Agendar avaliação
           </a>
+
+          {/* Contato rápido */}
+          <div style={{ fontSize: '.7rem', letterSpacing: '.08em', textTransform: 'uppercase', color: '#6B6B6B', marginTop: '.5rem' }}>
+            Brasília · Asa Sul
+          </div>
         </div>
       )}
     </>

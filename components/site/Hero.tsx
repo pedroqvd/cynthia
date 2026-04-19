@@ -34,7 +34,7 @@ export function Hero({ imgUrl }: { imgUrl?: string }) {
       {/* ── Lado esquerdo ── */}
       <div
         style={{ padding: '14rem 5rem 7rem 5rem', position: 'relative', zIndex: 2 }}
-        className="max-md:!px-6 max-md:!pt-36 max-md:!pb-12"
+        className="max-md:!px-6 max-md:!pt-20 max-md:!pb-14"
       >
         <div
           style={{
@@ -79,6 +79,7 @@ export function Hero({ imgUrl }: { imgUrl?: string }) {
             marginBottom: '3rem',
             animation: 'fadeUp .9s .35s ease both',
           }}
+          className="max-md:!max-w-full max-md:!mb-8"
         >
           Estética dental, cirurgia bucomaxilofacial e prótese. Uma especialista rara que conduz
           seu caso do início ao fim, com visão completa e resultado planejado.
@@ -158,12 +159,14 @@ export function Hero({ imgUrl }: { imgUrl?: string }) {
         <div
           style={{
             display: 'flex',
+            flexWrap: 'wrap',
             gap: '3rem',
             marginTop: '4rem',
             paddingTop: '2.5rem',
             borderTop: '1px solid rgba(201,169,110,0.3)',
             animation: 'fadeIn 1s .7s ease both',
           }}
+          className="max-md:!gap-x-8 max-md:!gap-y-6 max-md:!mt-8 max-md:!pt-6"
         >
           {[
             { num: '+12', label: 'Anos de especialização' },

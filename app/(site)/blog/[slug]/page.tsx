@@ -55,7 +55,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             maxWidth: '900px',
             margin: '0 auto'
           }}
-          className="max-md:!px-6 max-md:!pt-32 max-md:!pb-8"
+          className="max-md:!px-6 max-md:!pt-24 max-md:!pb-8"
         >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', animation: 'fadeIn 0.4s ease both' }}>
             <Link href="/blog" style={{ fontSize: '.7rem', letterSpacing: '.14em', textTransform: 'uppercase', color: '#6B6B6B', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '.5rem', transition: 'color 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.color = '#1B6B5A')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6B6B6B')}>
@@ -73,7 +73,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           <h1
             style={{
               fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+              fontSize: 'clamp(1.9rem, 6vw, 4.5rem)',
               fontWeight: 400,
               color: '#1C1C1C',
               lineHeight: 1.1,
@@ -127,7 +127,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
         {/* Prose (Markdown Content) */}
         <div
-          className="prose prose-lg mx-auto"
+          className="prose prose-sm md:prose-lg mx-auto"
           style={{
             maxWidth: '750px',
             background: 'transparent',
@@ -150,8 +150,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       </article>
 
       {/* Compartilhar / Agendar CTA */}
-      <section style={{ padding: '6rem 5rem', background: '#163D32', textAlign: 'center' }} className="max-md:!px-6">
-        <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '2.5rem', color: '#C9A96E', marginBottom: '1.5rem' }}>Gostou do artigo?</h2>
+      <section style={{ padding: '6rem 5rem', background: '#163D32', textAlign: 'center' }} className="max-md:!px-6 max-md:!py-14">
+        <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(1.6rem, 5vw, 2.5rem)', color: '#C9A96E', marginBottom: '1.5rem' }}>Gostou do artigo?</h2>
         <p style={{ fontSize: '.9rem', color: '#F5F0E6', opacity: 0.8, marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>Continue acompanhando as novidades ou agende uma avaliação para entender como essas técnicas podem ser aplicadas no seu caso.</p>
         <Link href="/agendamento" style={{ display: 'inline-flex', padding: '14px 28px', background: '#1B6B5A', color: '#FFF', fontSize: '.78rem', fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase', borderRadius: '3px', textDecoration: 'none' }}>
           Agendar Avaliação

@@ -75,6 +75,20 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Site público — iOS input zoom fix ─────────────────────────── */
+@media (max-width: 768px) {
+  .site-body input,
+  .site-body select,
+  .site-body textarea {
+    font-size: max(16px, 1em) !important;
+    min-height: 44px;
+  }
+  /* Reduce section padding site-wide on mobile */
+  .site-body section {
+    scroll-margin-top: 64px;
+  }
+}
+
 /* ── Admin panel — mobile responsive ────────────────────────────── */
 
 /* iOS Safari: prevent input zoom (font-size < 16px triggers zoom) */

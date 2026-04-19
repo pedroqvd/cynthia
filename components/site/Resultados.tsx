@@ -32,7 +32,7 @@ export function Resultados({ items = DEFAULT_ITEMS }: { items?: BeforeAfterItem[
     <section
       id="resultados"
       style={{ padding: '8rem 5rem', background: '#EDE7D9' }}
-      className="max-md:!px-6 max-md:!py-20"
+      className="max-md:!px-6 max-md:!py-14"
     >
       <div
         style={{

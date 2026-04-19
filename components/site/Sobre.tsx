@@ -26,7 +26,7 @@ export function Sobre({ imgUrl }: { imgUrl?: string }) {
         gap: '7rem',
         alignItems: 'center',
       }}
-      className="max-md:!grid-cols-1 max-md:!px-6 max-md:!py-20 max-md:!gap-12"
+      className="max-md:!grid-cols-1 max-md:!px-6 max-md:!py-14 max-md:!gap-10"
     >
       {/* ── Coluna visual ── */}
       <div ref={refVisual} className="reveal" style={{ position: 'relative' }}>

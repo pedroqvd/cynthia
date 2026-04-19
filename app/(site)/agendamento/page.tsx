@@ -26,7 +26,7 @@ export default function AgendamentoPage() {
           maxWidth: '860px',
           margin: '0 auto',
         }}
-        className="max-md:!px-6 max-md:!pt-24"
+        className="max-md:!px-6 max-md:!pt-20 max-md:!pb-6"
       >
         <div className="section-eyebrow">Consulta de avaliação</div>
         <h1
