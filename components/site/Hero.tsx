@@ -16,7 +16,7 @@ export function Hero({ imgUrl }: { imgUrl?: string }) {
         position: 'relative',
         overflow: 'hidden',
       }}
-      className="max-md:!grid-cols-1"
+      className="max-md:!grid-cols-1 max-md:!min-h-0"
     >
       {/* Linha central decorativa */}
       <div
@@ -190,6 +190,44 @@ export function Hero({ imgUrl }: { imgUrl?: string }) {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Mobile doctor photo */}
+        <div
+          className="md:hidden"
+          style={{
+            marginTop: '2.5rem',
+            position: 'relative',
+            width: '100%',
+            aspectRatio: '16/9',
+            borderRadius: '10px',
+            overflow: 'hidden',
+          }}
+        >
+          <Image
+            src={src}
+            alt="Dra. Cynthia Quevedo"
+            fill
+            style={{ objectFit: 'cover', objectPosition: 'center top' }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '55%',
+              background: 'linear-gradient(to top, rgba(15,14,12,0.75) 0%, transparent 100%)',
+            }}
+          />
+          <div style={{ position: 'absolute', bottom: '1rem', left: '1.25rem' }}>
+            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: '1rem', fontWeight: 400, color: '#F5F0E6' }}>
+              Dra. Cynthia Quevedo
+            </div>
+            <div style={{ fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#C9A96E', marginTop: '.15rem' }}>
+              Estética · Cirurgia · Prótese
+            </div>
+          </div>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { Toaster } from 'sonner'
+import { FloatingWhatsApp } from '@/components/site/FloatingWhatsApp'
 
 export const metadata: Metadata = {
   // Herda do root layout
@@ -10,6 +11,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="site-body">
       {children}
+      <FloatingWhatsApp />
       <Toaster
         theme="light"
         toastOptions={{

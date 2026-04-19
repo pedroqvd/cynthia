@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useRef } from 'react'
 import { useStaggerReveal } from '@/hooks/useReveal'
 
 interface Testimonial {
@@ -32,6 +33,11 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
 
 export function Depoimentos({ items = DEFAULT_TESTIMONIALS }: { items?: Testimonial[] }) {
   const { ref } = useStaggerReveal()
+  const [activeIdx, setActiveIdx] = useState(0)
+  const touchStartX = useRef(0)
+
+  const prev = () => setActiveIdx((i) => Math.max(0, i - 1))
+  const next = () => setActiveIdx((i) => Math.min(items.length - 1, i + 1))
 
   return (
     <section
@@ -52,19 +58,110 @@ export function Depoimentos({ items = DEFAULT_TESTIMONIALS }: { items?: Testimon
         O que os <em style={{ fontStyle: 'italic', color: '#7B1D3A' }}>pacientes</em> dizem
       </h2>
 
+      {/* Desktop grid */}
       <div
         ref={ref}
+        className="reveal hidden md:grid"
         style={{
-          display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '1.5rem',
           marginTop: '4rem',
         }}
-        className="max-md:!grid-cols-1"
       >
         {items.map((t) => (
           <DepCard key={t.nome} {...t} />
         ))}
+      </div>
+
+      {/* Mobile swipe carousel */}
+      <div className="md:hidden" style={{ marginTop: '2.5rem' }}>
+        <div
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
+          onTouchEnd={(e) => {
+            const dx = e.changedTouches[0].clientX - touchStartX.current
+            if (dx < -50) next()
+            else if (dx > 50) prev()
+          }}
+          style={{ userSelect: 'none' }}
+        >
+          <DepCard {...items[activeIdx]} />
+        </div>
+
+        {/* Dots */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '.5rem', marginTop: '1.5rem' }}>
+          {items.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIdx(i)}
+              style={{
+                width: i === activeIdx ? '22px' : '6px',
+                height: '6px',
+                borderRadius: '3px',
+                background: i === activeIdx ? '#1B6B5A' : 'rgba(27,107,90,0.2)',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                transition: 'width 0.25s ease, background 0.25s ease',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Arrow nav */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.25rem' }}>
+          <button
+            onClick={prev}
+            disabled={activeIdx === 0}
+            style={{
+              background: 'none',
+              border: '1px solid rgba(201,169,110,0.4)',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: activeIdx === 0 ? 'default' : 'pointer',
+              opacity: activeIdx === 0 ? 0.3 : 1,
+              transition: 'opacity 0.2s',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 4L6 8l4 4" stroke="#1C1C1C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          <span style={{ fontSize: '.7rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#6B6B6B', alignSelf: 'center' }}>
+            {activeIdx + 1} / {items.length}
+          </span>
+
+          <button
+            onClick={next}
+            disabled={activeIdx === items.length - 1}
+            style={{
+              background: 'none',
+              border: '1px solid rgba(201,169,110,0.4)',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: activeIdx === items.length - 1 ? 'default' : 'pointer',
+              opacity: activeIdx === items.length - 1 ? 0.3 : 1,
+              transition: 'opacity 0.2s',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 4l4 4-4 4" stroke="#1C1C1C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Swipe hint */}
+        <p style={{ textAlign: 'center', fontSize: '.65rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(107,107,107,0.6)', marginTop: '1rem' }}>
+          deslize para navegar
+        </p>
       </div>
     </section>
   )
