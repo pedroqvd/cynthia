@@ -1063,7 +1063,7 @@ function ModalWrapper({ children, onClose }: { children: React.ReactNode; onClos
       onClick={onClose}
     >
       <div
-        style={{ background: '#fff', borderRadius: '4px', padding: '2rem', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.15)' }}
+        style={{ background: '#fff', borderRadius: '10px', padding: '2rem', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.12)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -1134,13 +1134,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', border: '1px solid #e5e5e3', borderRadius: '2px',
+  width: '100%', border: '1px solid #e5e5e3', borderRadius: '6px',
   padding: '.65rem .9rem', fontSize: '.85rem', outline: 'none',
   background: '#fff', color: '#0f0e0c', boxSizing: 'border-box',
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.5rem',
+  background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: '1.5rem',
 }
 
 const sectionTitle: React.CSSProperties = {
@@ -1158,16 +1158,16 @@ const btnPrimStyle: React.CSSProperties = {
 
 const btnSecStyle: React.CSSProperties = {
   padding: '.55rem 1.25rem', background: 'transparent', color: '#0f0e0c',
-  border: '1px solid #e5e5e3', borderRadius: '2px', cursor: 'pointer', fontSize: '.78rem',
+  border: '1px solid #ebebea', borderRadius: '6px', cursor: 'pointer', fontSize: '.78rem',
 }
 
 const btnCancelStyle: React.CSSProperties = {
-  flex: 1, padding: '.65rem', border: '1px solid #e5e5e3', borderRadius: '2px',
+  flex: 1, padding: '.65rem', border: '1px solid #ebebea', borderRadius: '6px',
   background: 'transparent', cursor: 'pointer', fontSize: '.78rem', color: '#7a7570',
 }
 
 const btnEditStyle: React.CSSProperties = {
-  padding: '.3rem .7rem', border: '1px solid #e5e5e3', borderRadius: '2px',
+  padding: '.3rem .7rem', border: '1px solid #ebebea', borderRadius: '5px',
   background: 'transparent', cursor: 'pointer', fontSize: '.72rem', color: '#b8965a',
 }
 

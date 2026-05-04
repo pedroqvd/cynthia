@@ -73,7 +73,7 @@ async function getData() {
 export default async function FinanceiroPage() {
   const { entries, contratos, categories, leads, role, summary } = await getData()
   return (
-    <div style={{ padding: '2rem' }}>
+    <div style={{ padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
       <FinanceiroManager
         initialEntries={entries}
         initialContratos={contratos}

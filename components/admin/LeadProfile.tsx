@@ -185,39 +185,51 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
   const totalDespesas = confirmados.filter((e) => e.tipo === 'despesa').reduce((s, e) => s + Number(e.valor), 0)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 320px', gap: '1.5rem' }} className="max-md:!grid-cols-1">
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 300px', gap: '1.25rem' }} className="max-md:!grid-cols-1">
 
       {/* Coluna Principal */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
         {/* Cabeçalho */}
-        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: 'clamp(.875rem, 3vw, 1.5rem)' }}>
+        <div style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: 'clamp(.875rem, 3vw, 1.5rem)' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{
-                width: '52px', height: '52px', borderRadius: '50%',
-                background: `${statusColor}20`, display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: '1.3rem', fontWeight: 600,
+                width: '48px', height: '48px', borderRadius: '12px',
+                background: `${statusColor}15`,
+                border: `1px solid ${statusColor}30`,
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'center', fontSize: '1.25rem', fontWeight: 600,
                 color: statusColor, flexShrink: 0, fontFamily: 'Cormorant Garamond, Georgia, serif',
               }}>
                 {lead.nome.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h1 style={{ fontSize: '1.3rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '.25rem' }}>
-                  {lead.nome}
-                </h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '.8rem', color: '#7a7570' }}>{formatWhatsApp(lead.whatsapp)}</span>
-                  {lead.email && <span style={{ fontSize: '.8rem', color: '#7a7570' }}>{lead.email}</span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap', marginBottom: '.3rem' }}>
+                  <h1 style={{ fontSize: '1.25rem', fontWeight: 500, color: '#0f0e0c' }}>
+                    {lead.nome}
+                  </h1>
+                  <span style={{
+                    fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em',
+                    color: statusColor, background: `${statusColor}12`,
+                    padding: '.2rem .55rem', borderRadius: '4px', fontWeight: 500,
+                  }}>
+                    {STATUS_LABELS[lead.status]}
+                  </span>
                   {lead.urgencia && (
                     <span style={{
                       fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em',
-                      color: urgenciaColor!, background: `${urgenciaColor}18`,
-                      padding: '.15rem .5rem', borderRadius: '2px',
+                      color: urgenciaColor!, background: `${urgenciaColor}12`,
+                      padding: '.2rem .55rem', borderRadius: '4px',
                     }}>
                       {URGENCIA_LABELS[lead.urgencia]}
                     </span>
                   )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '.78rem', color: '#7a7570' }}>{formatWhatsApp(lead.whatsapp)}</span>
+                  {lead.email && <span style={{ fontSize: '.78rem', color: '#7a7570' }}>{lead.email}</span>}
+                  {lead.especialidade && <span style={{ fontSize: '.78rem', color: '#7a7570' }}>{lead.especialidade}</span>}
                 </div>
               </div>
             </div>
@@ -228,17 +240,17 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                 style={{
                   display: 'flex', alignItems: 'center', gap: '.4rem',
                   padding: '.5rem 1rem', background: '#25D366', color: '#fff',
-                  borderRadius: '2px', fontSize: '.75rem', fontWeight: 500, textDecoration: 'none',
+                  borderRadius: '6px', fontSize: '.75rem', fontWeight: 500, textDecoration: 'none',
                 }}
               >
-                <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+                <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
                   <path d="M9 1.5C4.858 1.5 1.5 4.858 1.5 9c0 1.306.34 2.532.935 3.595L1.5 16.5l3.99-1.012A7.43 7.43 0 009 16.5c4.142 0 7.5-3.358 7.5-7.5S13.142 1.5 9 1.5z" fill="currentColor"/>
                 </svg>
                 WhatsApp
               </a>
               <button
                 onClick={handleDelete}
-                style={{ padding: '.5rem 1rem', background: 'transparent', color: '#ef4444', border: '1px solid #ef444440', borderRadius: '2px', fontSize: '.75rem', cursor: 'pointer' }}
+                style={{ padding: '.5rem 1rem', background: 'transparent', color: '#ef4444', border: '1px solid #ef444430', borderRadius: '6px', fontSize: '.75rem', cursor: 'pointer' }}
               >
                 Excluir
               </button>
@@ -247,16 +259,16 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
         </div>
 
         {/* Tabs */}
-        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', borderBottom: '1px solid #e5e5e3', overflowX: 'auto' }}>
+        <div style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid #ebebea', overflowX: 'auto' }}>
             {(['mensagens', 'consultas', 'prontuario', 'financeiro', 'atividade'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 style={{
-                  padding: '.85rem 1.25rem', border: 'none', background: 'transparent', cursor: 'pointer',
-                  fontSize: '.82rem', fontWeight: 500, whiteSpace: 'nowrap',
-                  color: activeTab === tab ? '#b8965a' : '#7a7570',
+                  padding: '.85rem 1.1rem', border: 'none', background: 'transparent', cursor: 'pointer',
+                  fontSize: '.8rem', fontWeight: activeTab === tab ? 500 : 400, whiteSpace: 'nowrap',
+                  color: activeTab === tab ? '#0f0e0c' : '#7a7570',
                   borderBottom: activeTab === tab ? '2px solid #b8965a' : '2px solid transparent',
                   marginBottom: '-1px',
                 }}
@@ -419,33 +431,33 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
       </div>
 
       {/* Sidebar */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
         {/* Contato Rápido */}
-        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: '1.1rem' }}>
           <SectionTitle>Contato rápido</SectionTitle>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
             <a
               href={whatsAppUrl(lead.whatsapp, `Olá ${lead.nome.split(' ')[0]}!`)}
               target="_blank" rel="noreferrer"
-              style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#25D36615', border: '1px solid #25D36630', borderRadius: '2px', fontSize: '.78rem', fontWeight: 500, color: '#1a9e4d', textDecoration: 'none' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '.78rem', fontWeight: 500, color: '#15803d', textDecoration: 'none' }}
             >
-              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 1.5C4.858 1.5 1.5 4.858 1.5 9c0 1.306.34 2.532.935 3.595L1.5 16.5l3.99-1.012A7.43 7.43 0 009 16.5c4.142 0 7.5-3.358 7.5-7.5S13.142 1.5 9 1.5z" fill="currentColor" /></svg>
+              <svg width="13" height="13" viewBox="0 0 18 18" fill="none"><path d="M9 1.5C4.858 1.5 1.5 4.858 1.5 9c0 1.306.34 2.532.935 3.595L1.5 16.5l3.99-1.012A7.43 7.43 0 009 16.5c4.142 0 7.5-3.358 7.5-7.5S13.142 1.5 9 1.5z" fill="currentColor" /></svg>
               Enviar WhatsApp
             </a>
             <a
               href={`/admin/agenda`}
-              style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#b8965a12', border: '1px solid #b8965a30', borderRadius: '2px', fontSize: '.78rem', fontWeight: 500, color: '#b8965a', textDecoration: 'none' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#faf7f2', border: '1px solid #e8ddd0', borderRadius: '6px', fontSize: '.78rem', fontWeight: 500, color: '#92713d', textDecoration: 'none' }}
             >
-              <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M5 1v4M13 1v4M1 7h16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+              <svg width="13" height="13" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M5 1v4M13 1v4M1 7h16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
               Agendar Consulta
             </a>
             {lead.email && (
               <a
                 href={`mailto:${lead.email}`}
-                style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#3b82f612', border: '1px solid #3b82f630', borderRadius: '2px', fontSize: '.78rem', fontWeight: 500, color: '#3b82f6', textDecoration: 'none' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.55rem .75rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', fontSize: '.78rem', fontWeight: 500, color: '#1d4ed8', textDecoration: 'none' }}
               >
-                <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M1 4l8 6 8-6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                <svg width="13" height="13" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M1 4l8 6 8-6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
                 Enviar E-mail
               </a>
             )}
@@ -453,23 +465,23 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
         </div>
 
         {/* Próxima Consulta */}
-        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: '1.1rem' }}>
           <SectionTitle>Próxima consulta</SectionTitle>
           {proximaConsulta ? (
-            <div style={{ padding: '.75rem', background: '#f5f4f2', borderRadius: '2px', borderLeft: '3px solid #b8965a' }}>
+            <div style={{ padding: '.75rem', background: '#faf7f2', borderRadius: '6px', borderLeft: '3px solid #b8965a' }}>
               <div style={{ fontSize: '.85rem', fontWeight: 500, color: '#0f0e0c' }}>{proximaConsulta.procedimento}</div>
               <div style={{ fontSize: '.75rem', color: '#7a7570', marginTop: '.25rem' }}>{formatDateTime(proximaConsulta.data_hora)}</div>
-              <div style={{ fontSize: '.68rem', marginTop: '.35rem', color: '#b8965a', textTransform: 'uppercase', letterSpacing: '.06em' }}>{proximaConsulta.status}</div>
+              <div style={{ fontSize: '.65rem', marginTop: '.3rem', color: '#b8965a', textTransform: 'uppercase', letterSpacing: '.06em' }}>{proximaConsulta.status}</div>
             </div>
           ) : (
-            <p style={{ fontSize: '.78rem', color: '#7a7570', margin: 0 }}>Nenhuma consulta futura agendada.</p>
+            <p style={{ fontSize: '.78rem', color: '#b8b4af', margin: 0 }}>Nenhuma consulta futura agendada.</p>
           )}
         </div>
 
         {/* Status */}
-        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
-          <SectionTitle>Status do funil</SectionTitle>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: '1.1rem' }}>
+          <SectionTitle>Status no funil</SectionTitle>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
             {Object.entries(STATUS_LABELS).map(([value, label]) => {
               const color = STATUS_COLORS[value]
               const isActive = lead.status === value
@@ -479,16 +491,18 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                   onClick={() => handleStatusChange(value)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '.6rem',
-                    padding: '.55rem .75rem', border: `1px solid ${isActive ? color : '#e5e5e3'}`,
-                    borderRadius: '2px', background: isActive ? `${color}12` : 'transparent',
-                    cursor: 'pointer', fontSize: '.8rem',
+                    padding: '.5rem .75rem',
+                    border: `1px solid ${isActive ? `${color}40` : '#f0f0ee'}`,
+                    borderRadius: '6px',
+                    background: isActive ? `${color}0e` : 'transparent',
+                    cursor: 'pointer', fontSize: '.78rem',
                     color: isActive ? color : '#7a7570', fontWeight: isActive ? 500 : 400, textAlign: 'left',
                   }}
                 >
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
+                  <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: isActive ? color : '#d0cec9', flexShrink: 0 }} />
                   {label}
                   {isActive && (
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 'auto', flexShrink: 0 }}>
                       <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   )}
@@ -499,7 +513,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
         </div>
 
         {/* Informações editáveis */}
-        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: '1.1rem' }}>
           <SectionTitle>Informações</SectionTitle>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
             <EditableRow label="CPF" field="cpf" value={lead.cpf} editingField={editingField} fieldValue={fieldValue}
@@ -539,7 +553,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
 
         {/* Resumo Financeiro */}
         {sideSummary !== null && (
-          <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
+          <div style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: '1.1rem' }}>
             <SectionTitle>Resumo financeiro</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.78rem' }}>
@@ -561,7 +575,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
         )}
 
         {/* Observações */}
-        <div style={{ background: '#fff', border: '1px solid #e5e5e3', borderRadius: '4px', padding: '1.25rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: '1.1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem' }}>
             <SectionTitle style={{ marginBottom: 0 }}>Observações</SectionTitle>
             {!editingObs && (
@@ -603,7 +617,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
 
 function SectionTitle({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{ fontSize: '.7rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a7570', marginBottom: '.75rem', ...style }}>
+    <div style={{ fontSize: '.68rem', letterSpacing: '.08em', textTransform: 'uppercase', color: '#b8b4af', fontWeight: 600, marginBottom: '.65rem', ...style }}>
       {children}
     </div>
   )

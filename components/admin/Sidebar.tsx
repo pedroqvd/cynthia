@@ -5,16 +5,16 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-const LINKS = [
+const NAV_PRIMARY = [
   {
     href: '/admin/dashboard',
     label: 'Dashboard',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="1" y="1" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2"/>
-        <rect x="10" y="1" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2"/>
-        <rect x="1" y="10" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2"/>
-        <rect x="10" y="10" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+        <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+        <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+        <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.3"/>
       </svg>
     ),
   },
@@ -22,9 +22,9 @@ const LINKS = [
     href: '/admin/agenda',
     label: 'Agenda',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="1" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-        <path d="M5 1v4M13 1v4M1 7h16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="2.5" width="14" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+        <path d="M4.5 1v3M11.5 1v3M1 6.5h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
       </svg>
     ),
   },
@@ -32,47 +32,9 @@ const LINKS = [
     href: '/admin/leads',
     label: 'Pacientes',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <circle cx="9" cy="6" r="3.5" stroke="currentColor" strokeWidth="1.2"/>
-        <path d="M2 16c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/admin/whatsapp',
-    label: 'WhatsApp',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M9 1.5C4.858 1.5 1.5 4.858 1.5 9c0 1.306.34 2.532.935 3.595L1.5 16.5l3.99-1.012A7.43 7.43 0 009 16.5c4.142 0 7.5-3.358 7.5-7.5S13.142 1.5 9 1.5z" stroke="currentColor" strokeWidth="1.2"/>
-        <path d="M6.5 9.5c.5 1 1.5 2 2.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/admin/conteudo',
-    label: 'Conteúdo',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="1.5" y="1.5" width="15" height="15" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-        <path d="M5 6h8M5 9h8M5 12h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/admin/blog',
-    label: 'Artigos / Notícias',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M4 3h10a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1zM7 6h4M7 9h4M7 12h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/admin/automacoes',
-    label: 'Automações',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M9 1.5L3 9h5.25L7.5 16.5l6-7.5H8.25L9 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.3"/>
+        <path d="M1.5 14c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
       </svg>
     ),
   },
@@ -80,9 +42,50 @@ const LINKS = [
     href: '/admin/financeiro',
     label: 'Financeiro',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.2"/>
-        <path d="M9 4.5v9M6.5 7c0-1.38.9-2.5 2.5-2.5s2.5 1.12 2.5 2.5c0 1.38-1 2-2.5 2s-2.5.62-2.5 2c0 1.38.9 2.5 2.5 2.5s2.5-1.12 2.5-2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3"/>
+        <path d="M8 3.5v9M5.5 6.5c0-1.24.8-2.25 2.5-2.25s2.5 1.01 2.5 2.25c0 1.24-1 1.75-2.5 1.75s-2.5.51-2.5 1.75c0 1.24.8 2.25 2.5 2.25s2.5-1.01 2.5-2.25" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/whatsapp',
+    label: 'WhatsApp',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1C4.13 1 1 4.13 1 8c0 1.18.31 2.28.85 3.23L1 15l3.87-.84A6.96 6.96 0 008 15c3.87 0 7-3.13 7-7s-3.13-7-7-7z" stroke="currentColor" strokeWidth="1.3"/>
+        <path d="M5.5 8.5c.5.9 1.4 1.7 2.3 2.1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+]
+
+const NAV_SECONDARY = [
+  {
+    href: '/admin/conteudo',
+    label: 'Conteúdo',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="1" width="14" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+        <path d="M4 5h8M4 8h8M4 11h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/blog',
+    label: 'Artigos',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1zM6 5.5h4M6 8h4M6 10.5h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/automacoes',
+    label: 'Automações',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1L3 8h4.5L6.5 15l6-7H8.5L8 1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
       </svg>
     ),
   },
@@ -90,9 +93,9 @@ const LINKS = [
     href: '/admin/config',
     label: 'Configurações',
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <circle cx="9" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
-        <path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.697 3.697l1.414 1.414M12.889 12.889l1.414 1.414M3.697 14.303l1.414-1.414M12.889 5.111l1.414-1.414" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/>
+        <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.42 1.42M11.18 11.18l1.42 1.42M3.4 12.6l1.42-1.42M11.18 4.82l1.42-1.42" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
       </svg>
     ),
   },
@@ -103,11 +106,8 @@ export function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  // Auto-collapse on mobile/tablet viewports
   useEffect(() => {
-    function check() {
-      setCollapsed(window.innerWidth < 900)
-    }
+    function check() { setCollapsed(window.innerWidth < 900) }
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
@@ -121,148 +121,204 @@ export function AdminSidebar() {
     router.push('/admin/login')
   }
 
+  if (isLoginPage) return null
+
   return (
-    <aside
-      style={{
-        width: collapsed ? '64px' : '220px',
-        background: '#0f0e0c',
+    <aside style={{
+      width: collapsed ? '60px' : '216px',
+      background: '#0f0e0c',
+      display: 'flex',
+      flexDirection: 'column',
+      borderRight: '1px solid rgba(255,255,255,0.06)',
+      transition: 'width .2s ease',
+      flexShrink: 0,
+      position: 'sticky',
+      top: 0,
+      height: '100vh',
+      overflow: 'hidden',
+    }}>
+
+      {/* ── Marca ─────────────────────────────────────────── */}
+      <div style={{
+        height: '60px',
         display: 'flex',
-        flexDirection: 'column',
-        borderRight: '1px solid rgba(184,150,90,0.15)',
-        transition: 'width .2s ease',
+        alignItems: 'center',
+        padding: collapsed ? '0' : '0 1.25rem',
+        justifyContent: collapsed ? 'center' : 'space-between',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
         flexShrink: 0,
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Header */}
-      {!isLoginPage && (
-        <div
-          style={{
-            padding: '1.5rem',
-            borderBottom: '1px solid rgba(184,150,90,0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-end',
-          }}
-        >
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#7a7570',
-              padding: '4px',
-              display: 'flex',
-              flexShrink: 0,
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              {collapsed ? (
-                <path d="M2 8h12M6 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              ) : (
-                <path d="M14 8H2M10 4l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              )}
+      }}>
+        {!collapsed && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
+            <div style={{
+              width: '28px', height: '28px', borderRadius: '6px',
+              background: 'rgba(184,150,90,0.15)',
+              border: '1px solid rgba(184,150,90,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
+              fontSize: '1rem', fontWeight: 600, color: '#b8965a', flexShrink: 0,
+            }}>
+              C
+            </div>
+            <div>
+              <div style={{ fontSize: '.78rem', fontWeight: 500, color: '#f5f0e8', letterSpacing: '.01em' }}>Cynthia</div>
+              <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '.06em', textTransform: 'uppercase' }}>Painel</div>
+            </div>
+          </div>
+        )}
+        {collapsed && (
+          <div style={{
+            width: '28px', height: '28px', borderRadius: '6px',
+            background: 'rgba(184,150,90,0.15)',
+            border: '1px solid rgba(184,150,90,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
+            fontSize: '1rem', fontWeight: 600, color: '#b8965a',
+          }}>
+            C
+          </div>
+        )}
+        {!collapsed && (
+          <button onClick={() => setCollapsed(true)} style={collapseBtn} title="Recolher">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Navegação */}
-      <nav style={{ flex: 1, padding: '1rem 0', overflowY: 'auto', overflowX: 'hidden' }}>
-        {!isLoginPage && LINKS.map((link) => {
-          const active = pathname.startsWith(link.href)
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: collapsed ? '10px 0' : '10px 1.5rem',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                color: active ? '#b8965a' : '#7a7570',
-                textDecoration: 'none',
-                fontSize: '.82rem',
-                background: active ? 'rgba(184,150,90,0.08)' : 'transparent',
-                borderRight: active ? '2px solid #b8965a' : '2px solid transparent',
-                transition: 'color .15s, background .15s',
-                whiteSpace: 'nowrap',
-              }}
-              title={collapsed ? link.label : undefined}
-            >
-              {link.icon}
-              {!collapsed && link.label}
-            </Link>
-          )
-        })}
+      {/* ── Navegação ─────────────────────────────────────── */}
+      <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '.75rem 0' }}>
+
+        {/* Principal */}
+        {!collapsed && (
+          <div style={{ padding: '0 1rem .35rem', fontSize: '.58rem', fontWeight: 600, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '.12em' }}>
+            Principal
+          </div>
+        )}
+
+        {NAV_PRIMARY.map((link) => <NavLink key={link.href} link={link} collapsed={collapsed} pathname={pathname} />)}
+
+        {/* Divider */}
+        <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '.75rem 0' }} />
+
+        {/* Gestão */}
+        {!collapsed && (
+          <div style={{ padding: '0 1rem .35rem', fontSize: '.58rem', fontWeight: 600, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '.12em' }}>
+            Gestão
+          </div>
+        )}
+
+        {NAV_SECONDARY.map((link) => <NavLink key={link.href} link={link} collapsed={collapsed} pathname={pathname} />)}
       </nav>
 
-      {/* Busca global */}
-      {!isLoginPage && (
-        <div style={{ padding: '0 .75rem .5rem' }}>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true }))
-            }}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: collapsed ? '8px 0' : '8px 12px',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(184,150,90,0.12)',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              color: '#7a7570',
-              fontSize: '.72rem',
-              letterSpacing: '.04em',
-            }}
-            title="Busca global (⌘K)"
-          >
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-              <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.4"/>
-              <path d="M11 11l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
-            {!collapsed && (
-              <>
-                <span style={{ flex: 1 }}>Buscar...</span>
-                <kbd style={{ fontSize: '.6rem', background: 'rgba(255,255,255,0.08)', padding: '1px 4px', borderRadius: '2px' }}>⌘K</kbd>
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* Logout */}
-      <div style={{ padding: '1rem', borderTop: '1px solid rgba(184,150,90,0.15)', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+      {/* ── Busca global ──────────────────────────────────── */}
+      <div style={{ padding: '.5rem .75rem' }}>
         <button
-          onClick={handleLogout}
+          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true }))}
+          title="Busca global (⌘K)"
           style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: '#7a7570',
-            fontSize: '.72rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: 0,
+            width: '100%',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: collapsed ? '8px 0' : '7px 10px',
             justifyContent: collapsed ? 'center' : 'flex-start',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '6px',
+            cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: '.72rem',
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M5 12H2a1 1 0 01-1-1V3a1 1 0 011-1h3M9.5 9.5L13 7l-3.5-2.5M13 7H5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
+            <path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
           </svg>
-          {!collapsed && 'Sair'}
+          {!collapsed && (
+            <>
+              <span style={{ flex: 1, color: 'rgba(255,255,255,0.25)' }}>Buscar...</span>
+              <kbd style={{ fontSize: '.58rem', background: 'rgba(255,255,255,0.06)', padding: '2px 5px', borderRadius: '3px', color: 'rgba(255,255,255,0.2)' }}>⌘K</kbd>
+            </>
+          )}
         </button>
+      </div>
+
+      {/* ── Rodapé ────────────────────────────────────────── */}
+      <div style={{
+        padding: '.75rem',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex', alignItems: 'center',
+        justifyContent: collapsed ? 'center' : 'space-between',
+        gap: '.5rem',
+      }}>
+        {!collapsed && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', minWidth: 0 }}>
+            <div style={{
+              width: '28px', height: '28px', borderRadius: '50%',
+              background: 'rgba(184,150,90,0.12)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '.72rem', color: '#b8965a', flexShrink: 0,
+              fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 600,
+            }}>
+              D
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '.72rem', color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Dra. Cynthia</div>
+              <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,0.25)' }}>Admin</div>
+            </div>
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.35rem', flexShrink: 0 }}>
+          {collapsed && (
+            <button onClick={() => setCollapsed(false)} style={collapseBtn} title="Expandir">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+          <button onClick={handleLogout} title="Sair" style={collapseBtn}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5 12H2a1 1 0 01-1-1V3a1 1 0 011-1h3M9 9.5L12.5 7 9 4.5M12.5 7H5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </aside>
   )
+}
+
+function NavLink({ link, collapsed, pathname }: {
+  link: { href: string; label: string; icon: React.ReactNode }
+  collapsed: boolean
+  pathname: string
+}) {
+  const active = pathname.startsWith(link.href)
+  return (
+    <Link
+      href={link.href}
+      title={collapsed ? link.label : undefined}
+      style={{
+        display: 'flex', alignItems: 'center',
+        gap: '10px',
+        padding: collapsed ? '9px 0' : '8px 1rem',
+        justifyContent: collapsed ? 'center' : 'flex-start',
+        margin: '1px .5rem',
+        borderRadius: '6px',
+        color: active ? '#b8965a' : 'rgba(255,255,255,0.38)',
+        textDecoration: 'none', fontSize: '.8rem',
+        background: active ? 'rgba(184,150,90,0.1)' : 'transparent',
+        transition: 'color .12s, background .12s',
+        whiteSpace: 'nowrap',
+        fontWeight: active ? 500 : 400,
+      }}
+    >
+      {link.icon}
+      {!collapsed && link.label}
+    </Link>
+  )
+}
+
+const collapseBtn: React.CSSProperties = {
+  background: 'none', border: 'none', cursor: 'pointer',
+  color: 'rgba(255,255,255,0.25)', padding: '4px',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  borderRadius: '4px',
 }

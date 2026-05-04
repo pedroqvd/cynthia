@@ -12,12 +12,13 @@ export const metadata: Metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="admin-panel" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'DM Sans, sans-serif', background: '#fafaf9', overflowX: 'hidden' }}>
+    <div className="admin-panel" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'DM Sans, sans-serif', background: '#f7f6f4', overflowX: 'hidden' }}>
       <style>{`
         @keyframes shimmer {
           0% { background-position: 200% 0; }
           100% { background-position: -200% 0; }
         }
+        .admin-panel * { box-sizing: border-box; }
       `}</style>
       <AdminSidebar />
       <main style={{ flex: 1, overflow: 'auto' }}>
