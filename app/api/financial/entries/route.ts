@@ -20,16 +20,24 @@ export async function GET(req: NextRequest) {
   const mes = searchParams.get('mes') // YYYY-MM
   const status = searchParams.get('status')
   const leadId = searchParams.get('lead_id')
+  const contratoId = searchParams.get('contrato_id')
 
   let query = supabase
     .from('financial_entries')
-    .select(`*, financial_categories(id, nome, cor, tipo), leads(nome), appointments(procedimento)`)
+    .select(`
+      *,
+      financial_categories(id, nome, cor, tipo),
+      leads(id, nome, whatsapp, especialidade),
+      appointments(procedimento),
+      contratos(id, descricao, valor_total, parcelas)
+    `)
     .order('data', { ascending: false })
     .order('created_at', { ascending: false })
 
   if (tipo) query = query.eq('tipo', tipo)
   if (status) query = query.eq('status', status)
   if (leadId) query = query.eq('lead_id', leadId)
+  if (contratoId) query = query.eq('contrato_id', contratoId)
   if (mes) {
     const start = `${mes}-01`
     const end = new Date(Number(mes.split('-')[0]), Number(mes.split('-')[1]), 0)
@@ -52,24 +60,42 @@ export async function POST(req: NextRequest) {
   let body: Record<string, unknown>
   try { body = await req.json() } catch { return apiError('JSON inválido', 400) }
 
-  const { descricao, valor, data, tipo, category_id, appointment_id, lead_id,
-    forma_pagamento, status, notas } = body
+  const {
+    descricao, valor, data, tipo,
+    categoria_id, appointment_id, lead_id,
+    forma_pagamento, status, notas,
+    contrato_id, parcela_numero, parcelas_total,
+  } = body
 
-  if (!descricao || !valor || !data || !tipo) return apiError('Campos obrigatórios: descricao, valor, data, tipo', 422)
+  if (!descricao || !valor || !data || !tipo) {
+    return apiError('Campos obrigatórios: descricao, valor, data, tipo', 422)
+  }
 
   const { data: entry, error } = await supabase
     .from('financial_entries')
     .insert({
-      descricao, valor: Number(valor), data, tipo,
-      category_id: category_id || null,
+      descricao,
+      valor: Number(valor),
+      data,
+      tipo,
+      categoria_id: categoria_id || null,
       appointment_id: appointment_id || null,
       lead_id: lead_id || null,
       forma_pagamento: forma_pagamento || null,
       status: status || 'confirmado',
       notas: notas || null,
+      contrato_id: contrato_id || null,
+      parcela_numero: parcela_numero ? Number(parcela_numero) : null,
+      parcelas_total: parcelas_total ? Number(parcelas_total) : null,
       created_by: user.id,
     })
-    .select()
+    .select(`
+      *,
+      financial_categories(id, nome, cor, tipo),
+      leads(id, nome, whatsapp, especialidade),
+      appointments(procedimento),
+      contratos(id, descricao, valor_total, parcelas)
+    `)
     .single()
 
   if (error) return apiError(error.message, 500)
