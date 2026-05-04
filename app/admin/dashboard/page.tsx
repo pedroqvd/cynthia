@@ -112,7 +112,7 @@ export default async function DashboardPage() {
           </h1>
         </div>
         <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
-          <Link href="/admin/leads" style={btnPrim}>
+          <Link href="/admin/leads/novo" style={btnPrim}>
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
               <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/>
               <path d="M1.5 13c0-3.04 2.46-5.5 5.5-5.5s5.5 2.46 5.5 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
