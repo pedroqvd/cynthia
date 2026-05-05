@@ -267,9 +267,9 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                 onClick={() => setActiveTab(tab)}
                 style={{
                   padding: '.85rem 1.1rem', border: 'none', background: 'transparent', cursor: 'pointer',
-                  fontSize: '.8rem', fontWeight: activeTab === tab ? 500 : 400, whiteSpace: 'nowrap',
+                  fontSize: '.8rem', fontWeight: activeTab === tab ? 600 : 400, whiteSpace: 'nowrap',
                   color: activeTab === tab ? '#0f0e0c' : '#7a7570',
-                  borderBottom: activeTab === tab ? '2px solid #b8965a' : '2px solid transparent',
+                  borderBottom: activeTab === tab ? '2px solid #0f0e0c' : '2px solid transparent',
                   marginBottom: '-1px',
                 }}
               >
@@ -315,7 +315,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                     {lead.appointments.map((appt) => {
                       const color = APPT_STATUS_COLORS[appt.status] ?? '#b8965a'
                       return (
-                        <div key={appt.id} style={{ padding: '1rem', background: '#fafaf9', borderRadius: '2px', borderLeft: `3px solid ${color}` }}>
+                        <div key={appt.id} style={{ padding: '1rem', background: '#fff', borderRadius: '8px', border: '1px solid #ebebea', borderLeft: `3px solid ${color}` }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                             <div>
                               <div style={{ fontSize: '.88rem', fontWeight: 500, color: '#0f0e0c' }}>{appt.procedimento}</div>
@@ -324,7 +324,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                               </div>
                               {appt.notas && <div style={{ fontSize: '.75rem', color: '#7a7570', marginTop: '.4rem', fontStyle: 'italic' }}>{appt.notas}</div>}
                             </div>
-                            <span style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em', color, background: `${color}18`, padding: '.2rem .6rem', borderRadius: '2px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em', color, background: `${color}18`, padding: '.2rem .6rem', borderRadius: '6px', flexShrink: 0 }}>
                               {appt.status}
                             </span>
                           </div>
@@ -364,7 +364,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                               <td style={{ padding: '.5rem .6rem', color: '#0f0e0c' }}>{e.descricao}</td>
                               <td style={{ padding: '.5rem .6rem' }}>
                                 {e.financial_categories && (
-                                  <span style={{ fontSize: '.68rem', padding: '.15rem .5rem', borderRadius: '2px', background: `${e.financial_categories.cor}20`, color: e.financial_categories.cor }}>
+                                  <span style={{ fontSize: '.68rem', padding: '.15rem .5rem', borderRadius: '6px', background: `${e.financial_categories.cor}20`, color: e.financial_categories.cor }}>
                                     {e.financial_categories.nome}
                                   </span>
                                 )}
@@ -407,7 +407,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                             </div>
                             {alteracoes && Object.entries(alteracoes).map(([campo, { anterior, novo }]) => (
                               <div key={campo} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginTop: '.3rem', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '.68rem', color: '#7a7570', background: '#f5f4f2', padding: '.1rem .4rem', borderRadius: '2px' }}>
+                                <span style={{ fontSize: '.68rem', color: '#7a7570', background: '#f5f4f2', padding: '.1rem .4rem', borderRadius: '4px' }}>
                                   {CAMPO_LABELS[campo] ?? campo}
                                 </span>
                                 <span style={{ fontSize: '.68rem', color: '#ef4444', textDecoration: 'line-through' }}>
@@ -579,7 +579,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem' }}>
             <SectionTitle style={{ marginBottom: 0 }}>Observações</SectionTitle>
             {!editingObs && (
-              <button onClick={() => setEditingObs(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b8965a', fontSize: '.72rem' }}>
+              <button onClick={() => setEditingObs(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7a7570', fontSize: '.72rem' }}>
                 Editar
               </button>
             )}
@@ -589,15 +589,15 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
               <textarea
                 value={obsText} onChange={(e) => setObsText(e.target.value)} rows={4}
                 placeholder="Adicione observações sobre este paciente..."
-                style={{ width: '100%', border: '1px solid #e5e5e3', borderRadius: '2px', padding: '.65rem', fontSize: '.82rem', resize: 'vertical', fontFamily: 'DM Sans, sans-serif', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', border: '1px solid #ebebea', borderRadius: '6px', padding: '.65rem .75rem', fontSize: '.82rem', resize: 'vertical', fontFamily: 'DM Sans, sans-serif', outline: 'none', boxSizing: 'border-box', color: '#0f0e0c' }}
               />
               <div style={{ display: 'flex', gap: '.5rem', marginTop: '.5rem' }}>
                 <button onClick={() => { setEditingObs(false); setObsText(lead.observacoes ?? '') }}
-                  style={{ flex: 1, padding: '.5rem', border: '1px solid #e5e5e3', borderRadius: '2px', background: 'transparent', cursor: 'pointer', fontSize: '.75rem', color: '#7a7570' }}>
+                  style={{ flex: 1, padding: '.5rem', border: '1px solid #ebebea', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '.75rem', color: '#7a7570' }}>
                   Cancelar
                 </button>
                 <button onClick={handleSaveObs} disabled={savingObs}
-                  style={{ flex: 1, padding: '.5rem', border: 'none', borderRadius: '2px', background: '#b8965a', cursor: 'pointer', fontSize: '.75rem', fontWeight: 500, color: '#0f0e0c' }}>
+                  style={{ flex: 1, padding: '.5rem', border: 'none', borderRadius: '6px', background: '#0f0e0c', cursor: 'pointer', fontSize: '.75rem', fontWeight: 500, color: '#f5f0e8' }}>
                   {savingObs ? 'Salvando...' : 'Salvar'}
                 </button>
               </div>
@@ -638,7 +638,7 @@ function InfoRow({ label, value, highlight }: { label: string; value: string; hi
 
 function SummaryCard({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div style={{ padding: '.75rem', background: `${color}08`, border: `1px solid ${color}25`, borderRadius: '4px' }}>
+    <div style={{ padding: '.75rem', background: `${color}08`, border: `1px solid ${color}25`, borderRadius: '8px' }}>
       <div style={{ fontSize: '.62rem', color: '#7a7570', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.3rem' }}>{label}</div>
       <div style={{ fontSize: '.95rem', fontWeight: 600, color }}>{value}</div>
     </div>
@@ -699,10 +699,10 @@ function EditableRow({
             />
           )}
           <div style={{ display: 'flex', gap: '.35rem' }}>
-            <button onClick={onCancel} style={{ flex: 1, padding: '.35rem', border: '1px solid #e5e5e3', borderRadius: '2px', background: 'transparent', cursor: 'pointer', fontSize: '.72rem', color: '#7a7570' }}>
+            <button onClick={onCancel} style={{ flex: 1, padding: '.35rem', border: '1px solid #ebebea', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '.72rem', color: '#7a7570' }}>
               Cancelar
             </button>
-            <button onClick={() => onSave(field, fieldValue)} style={{ flex: 1, padding: '.35rem', border: 'none', borderRadius: '2px', background: '#b8965a', cursor: 'pointer', fontSize: '.72rem', fontWeight: 500, color: '#0f0e0c' }}>
+            <button onClick={() => onSave(field, fieldValue)} style={{ flex: 1, padding: '.35rem', border: 'none', borderRadius: '6px', background: '#0f0e0c', cursor: 'pointer', fontSize: '.72rem', fontWeight: 500, color: '#f5f0e8' }}>
               Salvar
             </button>
           </div>
@@ -713,7 +713,7 @@ function EditableRow({
 }
 
 const editInputStyle: React.CSSProperties = {
-  width: '100%', border: '1px solid #b8965a', borderRadius: '2px',
-  padding: '.4rem .6rem', fontSize: '.82rem', outline: 'none',
-  fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box',
+  width: '100%', border: '1px solid #ebebea', borderRadius: '6px',
+  padding: '.45rem .65rem', fontSize: '.82rem', outline: 'none',
+  fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', color: '#0f0e0c',
 }
