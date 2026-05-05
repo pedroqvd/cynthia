@@ -88,7 +88,7 @@ export function AgendaCalendar({ events: initialEvents, leads }: Props) {
         borderLeft: `3px solid ${color}`,
         color: '#0f0e0c',
         fontSize: '12px',
-        borderRadius: '2px',
+        borderRadius: '4px',
       },
     }
   }, [])
@@ -172,41 +172,131 @@ export function AgendaCalendar({ events: initialEvents, leads }: Props) {
 
 function EventModal({ event, onClose, onCancel }: { event: CalEvent; onClose: () => void; onCancel: () => void }) {
   const resource = event.resource
+  const [showPayment, setShowPayment] = useState(false)
+  const [payValor, setPayValor] = useState('')
+  const [payStatus, setPayStatus] = useState<'confirmado' | 'pendente'>('confirmado')
+  const [payDescricao, setPayDescricao] = useState(`Consulta — ${event.title}`)
+  const [savingPay, setSavingPay] = useState(false)
+  const [payDone, setPayDone] = useState(false)
+
+  async function registrarPagamento() {
+    if (!payValor || Number(payValor) <= 0) { toast.error('Informe o valor.'); return }
+    setSavingPay(true)
+    try {
+      const res = await fetch('/api/financial/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: 'receita',
+          descricao: payDescricao,
+          valor: Number(payValor),
+          data: event.start.toISOString().slice(0, 10),
+          status: payStatus,
+          lead_id: resource.lead_id ?? undefined,
+          appointment_id: event.id,
+        }),
+      })
+      if (!res.ok) throw new Error()
+      setPayDone(true)
+      setShowPayment(false)
+      toast.success('Lançamento registrado.')
+    } catch {
+      toast.error('Erro ao registrar pagamento.')
+    } finally {
+      setSavingPay(false)
+    }
+  }
+
   return (
     <div style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 500, color: '#0f0e0c', marginBottom: '1rem' }}>{event.title}</h2>
-        <p style={{ fontSize: '.85rem', color: '#7a7570', marginBottom: '.5rem' }}>
-          <strong>Início:</strong> {event.start.toLocaleString('pt-BR')}
-        </p>
-        <p style={{ fontSize: '.85rem', color: '#7a7570', marginBottom: '.5rem' }}>
-          <strong>Fim:</strong> {event.end.toLocaleString('pt-BR')}
-        </p>
-        {resource.leadWpp && (
-          <p style={{ fontSize: '.85rem', color: '#7a7570', marginBottom: '.5rem' }}>
-            <strong>WhatsApp:</strong>{' '}
-            <a href={`https://wa.me/${resource.leadWpp}`} target="_blank" rel="noreferrer" style={{ color: '#b8965a' }}>
-              {resource.leadWpp as string}
-            </a>
-          </p>
-        )}
+      <div style={{ ...modalStyle, borderRadius: '8px' }} onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#0f0e0c', lineHeight: 1.3, paddingRight: '1rem' }}>{event.title}</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b8b4af', padding: '2px', flexShrink: 0 }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        {/* Info */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem', marginBottom: '1.25rem' }}>
+          <div style={{ fontSize: '.82rem', color: '#7a7570' }}>
+            <strong style={{ color: '#0f0e0c' }}>Início:</strong> {event.start.toLocaleString('pt-BR')}
+          </div>
+          <div style={{ fontSize: '.82rem', color: '#7a7570' }}>
+            <strong style={{ color: '#0f0e0c' }}>Fim:</strong> {event.end.toLocaleString('pt-BR')}
+          </div>
+          {resource.leadWpp && (
+            <div style={{ fontSize: '.82rem', color: '#7a7570' }}>
+              <strong style={{ color: '#0f0e0c' }}>WhatsApp:</strong>{' '}
+              <a href={`https://wa.me/${resource.leadWpp}`} target="_blank" rel="noreferrer" style={{ color: '#7a7570' }}>
+                {resource.leadWpp as string}
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Links para o paciente */}
         {resource.lead_id && (
-          <p style={{ fontSize: '.85rem', marginBottom: '.5rem' }}>
-            <a
-              href={`/admin/leads/${resource.lead_id as string}`}
-              style={{ color: '#b8965a', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '.35rem' }}
-            >
+          <div style={{ display: 'flex', gap: '.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+            <a href={`/admin/leads/${resource.lead_id as string}`}
+              style={{ fontSize: '.75rem', color: '#0f0e0c', textDecoration: 'none', padding: '.4rem .8rem', border: '1px solid #ebebea', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '.35rem' }}>
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                 <circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.3"/>
                 <path d="M1.5 14c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
               </svg>
-              Ver perfil do paciente →
+              Ver perfil
             </a>
-          </p>
+            <a href={`/admin/leads/${resource.lead_id as string}?tab=prontuario`}
+              style={{ fontSize: '.75rem', color: '#0f0e0c', textDecoration: 'none', padding: '.4rem .8rem', border: '1px solid #ebebea', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '.35rem' }}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <path d="M3 2h10a1 1 0 011 1v11a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.3"/>
+                <path d="M5 6h6M5 9h6M5 12h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+              Prontuário
+            </a>
+          </div>
         )}
-        <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.5rem' }}>
-          <button onClick={onClose} style={btnSecStyle}>Fechar</button>
-          <button onClick={onCancel} style={{ ...btnSecStyle, color: '#ef4444', borderColor: '#ef4444' }}>Cancelar consulta</button>
+
+        {/* Lançamento financeiro */}
+        <div style={{ borderTop: '1px solid #f0f0ee', paddingTop: '1rem' }}>
+          {payDone ? (
+            <div style={{ fontSize: '.78rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Lançamento registrado com sucesso
+            </div>
+          ) : showPayment ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+              <div style={{ fontSize: '.68rem', fontWeight: 600, color: '#b8b4af', textTransform: 'uppercase', letterSpacing: '.08em' }}>Registrar pagamento</div>
+              <input value={payDescricao} onChange={(e) => setPayDescricao(e.target.value)} placeholder="Descrição" style={inputStyle} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.5rem' }}>
+                <input type="number" min="0" step="10" value={payValor} onChange={(e) => setPayValor(e.target.value)} placeholder="Valor (R$)" style={inputStyle} />
+                <select value={payStatus} onChange={(e) => setPayStatus(e.target.value as 'confirmado' | 'pendente')} style={inputStyle}>
+                  <option value="confirmado">Confirmado</option>
+                  <option value="pendente">Pendente</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: '.5rem' }}>
+                <button onClick={() => setShowPayment(false)} style={btnSecStyle}>Cancelar</button>
+                <button onClick={registrarPagamento} disabled={savingPay} style={btnPrimStyle}>
+                  {savingPay ? 'Salvando...' : 'Salvar lançamento'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setShowPayment(true)} style={{ ...btnSecStyle, width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3"/>
+                <path d="M8 4.5v7M5 8h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+              Registrar pagamento
+            </button>
+          )}
+        </div>
+
+        {/* Ações */}
+        <div style={{ display: 'flex', gap: '.75rem', marginTop: '1rem' }}>
+          <button onClick={onCancel} style={{ ...btnSecStyle, flex: 1, color: '#ef4444', borderColor: '#ef444430' }}>Cancelar consulta</button>
         </div>
       </div>
     </div>
@@ -286,23 +376,24 @@ const overlayStyle: React.CSSProperties = {
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 const modalStyle: React.CSSProperties = {
-  background: '#fff', borderRadius: '4px', padding: '2rem',
+  background: '#fff', borderRadius: '8px', padding: '1.5rem',
   width: '100%', maxWidth: '440px', boxShadow: '0 20px 60px rgba(0,0,0,.15)',
 }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: '.72rem', letterSpacing: '.1em',
-  textTransform: 'uppercase', color: '#7a7570', marginBottom: '.4rem',
+  display: 'block', fontSize: '.72rem', letterSpacing: '.08em',
+  textTransform: 'uppercase', color: '#b8b4af', marginBottom: '.4rem', fontWeight: 600,
 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', border: '1px solid #e5e5e3', borderRadius: '2px',
-  padding: '.65rem .9rem', fontSize: '.85rem', outline: 'none',
+  width: '100%', border: '1px solid #ebebea', borderRadius: '6px',
+  padding: '.6rem .85rem', fontSize: '.85rem', outline: 'none',
+  fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', color: '#0f0e0c',
 }
 const btnSecStyle: React.CSSProperties = {
-  flex: 1, padding: '.7rem', border: '1px solid #e5e5e3', borderRadius: '2px',
-  background: 'transparent', cursor: 'pointer', fontSize: '.78rem', color: '#7a7570',
+  flex: 1, padding: '.65rem', border: '1px solid #ebebea', borderRadius: '6px',
+  background: '#fff', cursor: 'pointer', fontSize: '.78rem', color: '#7a7570',
 }
 const btnPrimStyle: React.CSSProperties = {
-  flex: 1, padding: '.7rem', border: 'none', borderRadius: '2px',
-  background: '#b8965a', cursor: 'pointer', fontSize: '.78rem',
-  fontWeight: 500, color: '#0f0e0c',
+  flex: 1, padding: '.65rem', border: 'none', borderRadius: '6px',
+  background: '#0f0e0c', cursor: 'pointer', fontSize: '.78rem',
+  fontWeight: 500, color: '#f5f0e8',
 }

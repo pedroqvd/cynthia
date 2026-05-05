@@ -243,8 +243,18 @@ export function WhatsAppInbox({ conversations: initial }: Props) {
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: '.5rem' }}>
                 <a
+                  href={`/admin/agenda`}
+                  style={{ fontSize: '.72rem', color: '#7a7570', textDecoration: 'none', padding: '.4rem .8rem', border: '1px solid #ebebea', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '.35rem' }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+                    <path d="M4 1v2.5M10 1v2.5M1 5.5h12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                  </svg>
+                  Agendar
+                </a>
+                <a
                   href={`/admin/leads/${selectedConv.id}`}
-                  style={{ fontSize: '.72rem', color: '#b8965a', textDecoration: 'none', padding: '.4rem .8rem', border: '1px solid rgba(184,150,90,0.3)', borderRadius: '2px' }}
+                  style={{ fontSize: '.72rem', color: '#0f0e0c', textDecoration: 'none', padding: '.4rem .8rem', border: '1px solid #ebebea', borderRadius: '6px' }}
                 >
                   Ver perfil
                 </a>

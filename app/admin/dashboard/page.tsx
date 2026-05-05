@@ -35,6 +35,7 @@ async function getMetrics() {
     { data: ultimasMensagens },
     { data: leadsRecentes },
     { data: ticketData },
+    { data: financeiroMes },
     ...funilCounts
   ] = await Promise.all([
     supabase.from('leads').select('*', { count: 'exact', head: true }).gte('created_at', hoje.toISOString()),
@@ -44,10 +45,11 @@ async function getMetrics() {
     supabase.from('leads').select('*', { count: 'exact', head: true }),
     supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'fechado'),
     supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'novo'),
-    supabase.from('appointments').select('id, procedimento, data_hora, status, leads(nome, whatsapp)').gte('data_hora', hoje.toISOString()).not('status', 'eq', 'cancelado').order('data_hora').limit(6),
+    supabase.from('appointments').select('id, procedimento, data_hora, status, lead_id, leads(nome, whatsapp)').gte('data_hora', hoje.toISOString()).not('status', 'eq', 'cancelado').order('data_hora').limit(6),
     supabase.from('messages').select('id, content, direction, created_at, lead_id, leads(id, nome)').eq('direction', 'in').order('created_at', { ascending: false }).limit(5),
     supabase.from('leads').select('id, nome, status, created_at, especialidade').order('created_at', { ascending: false }).limit(30),
     supabase.from('leads').select('ticket_estimado').not('ticket_estimado', 'is', null),
+    supabase.from('financial_entries').select('tipo, valor').eq('status', 'confirmado').gte('data', inicioDoMes.toISOString().slice(0, 10)),
     ...FUNIL_STAGES.map(({ status }) =>
       supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', status)
     ),
@@ -67,6 +69,10 @@ async function getMetrics() {
     ? Math.round((leadsFechados / totalLeads) * 100)
     : 0
 
+  const finEntries = (financeiroMes ?? []) as { tipo: string; valor: number }[]
+  const receitasMes = finEntries.filter((e) => e.tipo === 'receita').reduce((s, e) => s + Number(e.valor), 0)
+  const despesasMes = finEntries.filter((e) => e.tipo === 'despesa').reduce((s, e) => s + Number(e.valor), 0)
+
   return {
     leadsHoje: leadsHoje ?? 0,
     leadsNovos: leadsNovos ?? 0,
@@ -81,6 +87,9 @@ async function getMetrics() {
     ultimasMensagens: ultimasMensagens ?? [],
     leadsRecentes: leadsRecentes ?? [],
     funil,
+    receitasMes,
+    despesasMes,
+    saldoMes: receitasMes - despesasMes,
   }
 }
 
@@ -192,6 +201,30 @@ export default async function DashboardPage() {
         />
       </div>
 
+      {/* ── Financeiro do mês ──────────────────────────────── */}
+      <Link href="/admin/financeiro" style={{ textDecoration: 'none' }}>
+        <div style={{ ...card, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0', padding: 0, overflow: 'hidden' }}>
+          {[
+            { label: 'Receitas confirmadas', value: fmt(m.receitasMes), color: '#10b981' },
+            { label: 'Despesas confirmadas', value: fmt(m.despesasMes), color: '#ef4444' },
+            { label: 'Saldo do mês', value: fmt(m.saldoMes), color: m.saldoMes >= 0 ? '#b8965a' : '#ef4444' },
+          ].map((item, i, arr) => (
+            <div key={item.label} style={{ padding: '1.1rem 1.4rem', borderRight: i < arr.length - 1 ? '1px solid #ebebea' : 'none' }}>
+              <div style={{ fontSize: '.65rem', color: '#b8b4af', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: '.4rem' }}>{item.label}</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 600, color: item.color }}>{item.value}</div>
+            </div>
+          ))}
+          <div style={{ padding: '1.1rem 1.4rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            <span style={{ fontSize: '.72rem', color: '#b8b4af', display: 'flex', alignItems: 'center', gap: '.25rem' }}>
+              Financeiro
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5h6M5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </Link>
+
       {/* ── Grid principal ─────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.6fr) minmax(0,1fr)', gap: '1.25rem' }} className="max-md:!grid-cols-1">
 
@@ -207,12 +240,14 @@ export default async function DashboardPage() {
                 const statusColor = APPT_STATUS_COLORS[(appt.status as string)] ?? '#b8965a'
                 const dt = new Date(appt.data_hora as string)
                 const isToday = dt.toDateString() === new Date().toDateString()
+                const href = appt.lead_id ? `/admin/leads/${appt.lead_id as string}` : '/admin/agenda'
                 return (
-                  <div key={appt.id as string} style={{
+                  <Link key={appt.id as string} href={href} style={{
                     display: 'flex', alignItems: 'center', gap: '1rem',
                     padding: '.75rem', borderRadius: '6px',
                     background: isToday ? 'rgba(184,150,90,0.05)' : '#fafaf9',
                     border: `1px solid ${isToday ? 'rgba(184,150,90,0.2)' : '#f0f0ee'}`,
+                    textDecoration: 'none',
                   }}>
                     {/* Hora */}
                     <div style={{ flexShrink: 0, textAlign: 'center', minWidth: '44px' }}>
@@ -238,7 +273,7 @@ export default async function DashboardPage() {
                     </div>
                     {/* Status dot */}
                     <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: statusColor, flexShrink: 0 }} />
-                  </div>
+                  </Link>
                 )
               })}
             </div>

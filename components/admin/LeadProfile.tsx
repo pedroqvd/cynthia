@@ -86,13 +86,17 @@ const CAMPO_LABELS: Record<string, string> = {
   data_nascimento: 'Data de nascimento', convenio: 'Convênio', indicado_por: 'Indicado por',
 }
 
-export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
+const VALID_TABS = ['mensagens', 'consultas', 'prontuario', 'financeiro', 'atividade'] as const
+type TabId = typeof VALID_TABS[number]
+
+export function LeadProfile({ lead: initialLead, initialTab }: { lead: Lead; initialTab?: string }) {
   const router = useRouter()
   const [lead, setLead] = useState(initialLead)
   const [editingObs, setEditingObs] = useState(false)
   const [obsText, setObsText] = useState(lead.observacoes ?? '')
   const [savingObs, setSavingObs] = useState(false)
-  const [activeTab, setActiveTab] = useState<'mensagens' | 'consultas' | 'atividade' | 'financeiro' | 'prontuario'>('mensagens')
+  const resolvedTab: TabId = VALID_TABS.includes(initialTab as TabId) ? (initialTab as TabId) : 'mensagens'
+  const [activeTab, setActiveTab] = useState<TabId>(resolvedTab)
   const [financialEntries, setFinancialEntries] = useState<FinancialEntry[]>([])
   const [contratos, setContratos] = useState<Contrato[]>([])
   const [loadingFinancial, setLoadingFinancial] = useState(false)
