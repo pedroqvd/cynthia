@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -519,7 +520,9 @@ export function FinanceiroManager({
                         <div style={{ fontWeight: 500 }}>{e.descricao}</div>
                         {e.leads && (
                           <div style={{ fontSize: '.7rem', color: '#7a7570' }}>
-                            {(e.leads as Lead).nome}
+                            <Link href={`/admin/leads/${(e.leads as Lead).id}`} style={{ color: '#7a7570', textDecoration: 'none', borderBottom: '1px dashed #d0cec9' }}>
+                              {(e.leads as Lead).nome}
+                            </Link>
                             {e.leads.especialidade && ` · ${e.leads.especialidade}`}
                           </div>
                         )}
@@ -620,9 +623,13 @@ export function FinanceiroManager({
                       {/* Info do paciente */}
                       <div style={{ flex: 1, minWidth: 200 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.35rem' }}>
-                          <span style={{ fontSize: '.95rem', fontWeight: 600, color: '#0f0e0c' }}>
-                            {c.leads?.nome ?? '—'}
-                          </span>
+                          {c.leads?.id ? (
+                            <Link href={`/admin/leads/${c.leads.id}`} style={{ fontSize: '.95rem', fontWeight: 600, color: '#0f0e0c', textDecoration: 'none', borderBottom: '1px dashed #d0cec9' }}>
+                              {c.leads.nome}
+                            </Link>
+                          ) : (
+                            <span style={{ fontSize: '.95rem', fontWeight: 600, color: '#0f0e0c' }}>{c.leads?.nome ?? '—'}</span>
+                          )}
                           <span style={{
                             fontSize: '.62rem', padding: '.15rem .45rem', borderRadius: '2px',
                             background: `${statusColor}18`, color: statusColor, fontWeight: 500,
