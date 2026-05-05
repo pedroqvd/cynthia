@@ -16,11 +16,14 @@ export async function POST(request: NextRequest) {
 
   const data = parsed.data
 
+  const normalizePhone = (p: string) => p.replace(/\D/g, '')
+  const whatsappNorm = normalizePhone(data.whatsapp)
+
   const { data: existing } = await supabase
     .from('leads')
     .select('id')
-    .eq('whatsapp', data.whatsapp)
-    .single()
+    .eq('whatsapp', whatsappNorm)
+    .maybeSingle()
 
   if (existing) return apiError('Já existe um paciente com este WhatsApp.', 409)
 
@@ -29,7 +32,7 @@ export async function POST(request: NextRequest) {
     .insert({
       nome: data.nome,
       cpf: data.cpf || null,
-      whatsapp: data.whatsapp,
+      whatsapp: whatsappNorm,
       email: data.email || null,
       especialidade: data.especialidade || null,
       urgencia: data.urgencia || null,
