@@ -44,6 +44,22 @@ type FinancialEntry = {
   data: string
   status: 'pendente' | 'confirmado' | 'cancelado'
   financial_categories: { nome: string; cor: string } | null
+  contrato_id: string | null
+  parcela_numero: number | null
+  parcelas_total: number | null
+  contratos: { id: string; descricao: string; valor_total: number } | null
+}
+
+type Contrato = {
+  id: string
+  descricao: string
+  valor_total: number
+  parcelas: number
+  valor_entrada: number | null
+  data_inicio: string | null
+  status: 'ativo' | 'quitado' | 'cancelado'
+  notas: string | null
+  financial_entries: { id: string; valor: number; status: string; parcela_numero: number | null; tipo: string; data: string }[]
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -70,14 +86,19 @@ const CAMPO_LABELS: Record<string, string> = {
   data_nascimento: 'Data de nascimento', convenio: 'Convênio', indicado_por: 'Indicado por',
 }
 
-export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
+const VALID_TABS = ['mensagens', 'consultas', 'prontuario', 'financeiro', 'atividade'] as const
+type TabId = typeof VALID_TABS[number]
+
+export function LeadProfile({ lead: initialLead, initialTab }: { lead: Lead; initialTab?: string }) {
   const router = useRouter()
   const [lead, setLead] = useState(initialLead)
   const [editingObs, setEditingObs] = useState(false)
   const [obsText, setObsText] = useState(lead.observacoes ?? '')
   const [savingObs, setSavingObs] = useState(false)
-  const [activeTab, setActiveTab] = useState<'mensagens' | 'consultas' | 'atividade' | 'financeiro' | 'prontuario'>('mensagens')
+  const resolvedTab: TabId = VALID_TABS.includes(initialTab as TabId) ? (initialTab as TabId) : 'mensagens'
+  const [activeTab, setActiveTab] = useState<TabId>(resolvedTab)
   const [financialEntries, setFinancialEntries] = useState<FinancialEntry[]>([])
+  const [contratos, setContratos] = useState<Contrato[]>([])
   const [loadingFinancial, setLoadingFinancial] = useState(false)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [fieldValue, setFieldValue] = useState<string>('')
@@ -86,10 +107,18 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
   const fetchFinancial = useCallback(async () => {
     setLoadingFinancial(true)
     try {
-      const res = await fetch(`/api/financial/entries?lead_id=${lead.id}`)
-      if (!res.ok) return
-      const json = await res.json()
-      setFinancialEntries(json.data ?? json)
+      const [entriesRes, contratosRes] = await Promise.all([
+        fetch(`/api/financial/entries?lead_id=${lead.id}`),
+        fetch(`/api/financial/contracts?lead_id=${lead.id}`),
+      ])
+      if (entriesRes.ok) {
+        const json = await entriesRes.json()
+        setFinancialEntries(json.data ?? json)
+      }
+      if (contratosRes.ok) {
+        const json = await contratosRes.json()
+        setContratos(json.data ?? json)
+      }
     } finally {
       setLoadingFinancial(false)
     }
@@ -267,9 +296,9 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                 onClick={() => setActiveTab(tab)}
                 style={{
                   padding: '.85rem 1.1rem', border: 'none', background: 'transparent', cursor: 'pointer',
-                  fontSize: '.8rem', fontWeight: activeTab === tab ? 500 : 400, whiteSpace: 'nowrap',
+                  fontSize: '.8rem', fontWeight: activeTab === tab ? 600 : 400, whiteSpace: 'nowrap',
                   color: activeTab === tab ? '#0f0e0c' : '#7a7570',
-                  borderBottom: activeTab === tab ? '2px solid #b8965a' : '2px solid transparent',
+                  borderBottom: activeTab === tab ? '2px solid #0f0e0c' : '2px solid transparent',
                   marginBottom: '-1px',
                 }}
               >
@@ -315,7 +344,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                     {lead.appointments.map((appt) => {
                       const color = APPT_STATUS_COLORS[appt.status] ?? '#b8965a'
                       return (
-                        <div key={appt.id} style={{ padding: '1rem', background: '#fafaf9', borderRadius: '2px', borderLeft: `3px solid ${color}` }}>
+                        <div key={appt.id} style={{ padding: '1rem', background: '#fff', borderRadius: '8px', border: '1px solid #ebebea', borderLeft: `3px solid ${color}` }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                             <div>
                               <div style={{ fontSize: '.88rem', fontWeight: 500, color: '#0f0e0c' }}>{appt.procedimento}</div>
@@ -324,7 +353,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                               </div>
                               {appt.notas && <div style={{ fontSize: '.75rem', color: '#7a7570', marginTop: '.4rem', fontStyle: 'italic' }}>{appt.notas}</div>}
                             </div>
-                            <span style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em', color, background: `${color}18`, padding: '.2rem .6rem', borderRadius: '2px', flexShrink: 0 }}>
+                            <span style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.08em', color, background: `${color}18`, padding: '.2rem .6rem', borderRadius: '6px', flexShrink: 0 }}>
                               {appt.status}
                             </span>
                           </div>
@@ -338,50 +367,157 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
             {activeTab === 'financeiro' && (
               loadingFinancial
                 ? <EmptyState text="Carregando..." />
-                : financialEntries.length === 0
+                : (financialEntries.length === 0 && contratos.length === 0)
                   ? <EmptyState text="Nenhum lançamento financeiro vinculado a este paciente." />
-                  : <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      {/* Cards resumo */}
-                      <div className="fin-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
+                  : <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                      {/* Resumo */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' }}>
                         <SummaryCard label="Receitas confirmadas" value={`R$ ${totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} color="#10b981" />
                         <SummaryCard label="Despesas confirmadas" value={`R$ ${totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} color="#ef4444" />
                         <SummaryCard label="Saldo" value={`R$ ${(totalReceitas - totalDespesas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} color={totalReceitas >= totalDespesas ? '#b8965a' : '#ef4444'} />
                       </div>
-                      {/* Tabela */}
-                      <div className="table-scroll-wrap">
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.8rem', minWidth: '500px' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid #e5e5e3' }}>
-                            {['Data', 'Descrição', 'Categoria', 'Valor', 'Status'].map((h) => (
-                              <th key={h} style={{ textAlign: 'left', padding: '.4rem .6rem', fontSize: '.68rem', color: '#7a7570', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em' }}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {financialEntries.map((e) => (
-                            <tr key={e.id} style={{ borderBottom: '1px solid #f0f0ee' }}>
-                              <td style={{ padding: '.5rem .6rem', color: '#7a7570', whiteSpace: 'nowrap' }}>{new Date(e.data + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
-                              <td style={{ padding: '.5rem .6rem', color: '#0f0e0c' }}>{e.descricao}</td>
-                              <td style={{ padding: '.5rem .6rem' }}>
-                                {e.financial_categories && (
-                                  <span style={{ fontSize: '.68rem', padding: '.15rem .5rem', borderRadius: '2px', background: `${e.financial_categories.cor}20`, color: e.financial_categories.cor }}>
-                                    {e.financial_categories.nome}
-                                  </span>
-                                )}
-                              </td>
-                              <td style={{ padding: '.5rem .6rem', fontWeight: 500, color: e.tipo === 'receita' ? '#10b981' : '#ef4444', whiteSpace: 'nowrap' }}>
-                                {e.tipo === 'receita' ? '+' : '-'} R$ {Number(e.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                              </td>
-                              <td style={{ padding: '.5rem .6rem' }}>
-                                <span style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.06em', color: e.status === 'confirmado' ? '#10b981' : e.status === 'pendente' ? '#f59e0b' : '#ef4444' }}>
-                                  {e.status}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      </div>
+
+                      {/* Contratos */}
+                      {contratos.length > 0 && (
+                        <div>
+                          <div style={{ fontSize: '.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.08em', color: '#b8b4af', marginBottom: '.6rem' }}>
+                            Contratos ({contratos.length})
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+                            {contratos.map((c) => {
+                              const confirmadas = (c.financial_entries ?? []).filter((e) => e.tipo === 'receita' && e.status === 'confirmado')
+                              const vPago = confirmadas.reduce((s, e) => s + Number(e.valor), 0)
+                              const vTotal = Number(c.valor_total)
+                              const pct = vTotal > 0 ? Math.min(100, (vPago / vTotal) * 100) : 0
+                              const vRestante = Math.max(0, vTotal - vPago)
+                              const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                              const statusColors: Record<string, string> = { ativo: '#b8965a', quitado: '#10b981', cancelado: '#ef4444' }
+                              const statusColor = statusColors[c.status] ?? '#7a7570'
+                              const statusLabels: Record<string, string> = { ativo: 'Ativo', quitado: 'Quitado', cancelado: 'Cancelado' }
+
+                              return (
+                                <div key={c.id} style={{ background: '#fff', border: '1px solid #ebebea', borderRadius: '8px', padding: '1rem' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '.75rem' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.2rem' }}>
+                                        <span style={{ fontSize: '.85rem', fontWeight: 600, color: '#0f0e0c' }}>{c.descricao}</span>
+                                        <span style={{ fontSize: '.62rem', padding: '.15rem .45rem', borderRadius: '4px', background: `${statusColor}18`, color: statusColor, fontWeight: 500 }}>
+                                          {statusLabels[c.status]}
+                                        </span>
+                                      </div>
+                                      {c.notas && <div style={{ fontSize: '.72rem', color: '#7a7570', fontStyle: 'italic' }}>{c.notas}</div>}
+                                    </div>
+                                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                      <div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f0e0c' }}>{fmt(vTotal)}</div>
+                                      <div style={{ fontSize: '.68rem', color: '#7a7570' }}>{c.parcelas}x de {fmt(vTotal / c.parcelas)}</div>
+                                    </div>
+                                  </div>
+
+                                  <div style={{ marginTop: '.75rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '.3rem' }}>
+                                      <span style={{ fontSize: '.68rem', color: '#7a7570' }}>{fmt(vPago)} recebido</span>
+                                      <span style={{ fontSize: '.68rem', fontWeight: 500, color: pct >= 100 ? '#10b981' : '#b8965a' }}>{Math.round(pct)}%</span>
+                                    </div>
+                                    <div style={{ height: 5, borderRadius: 20, background: '#f0f0ee', overflow: 'hidden' }}>
+                                      <div style={{ height: '100%', width: `${pct}%`, background: pct >= 100 ? '#10b981' : '#b8965a', borderRadius: 20, transition: 'width .3s' }} />
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.3rem' }}>
+                                      <span style={{ fontSize: '.65rem', color: '#b8b4af' }}>Início: {c.data_inicio ? new Date(c.data_inicio + 'T12:00:00').toLocaleDateString('pt-BR') : '—'}</span>
+                                      <span style={{ fontSize: '.65rem', color: vRestante > 0 ? '#b8965a' : '#10b981', fontWeight: 500 }}>
+                                        {vRestante > 0 ? `Falta ${fmt(vRestante)}` : 'Quitado'}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {(c.financial_entries ?? []).length > 0 && (
+                                    <div style={{ marginTop: '.75rem', background: '#f7f6f4', borderRadius: '6px', padding: '.6rem .8rem' }}>
+                                      <div style={{ fontSize: '.65rem', color: '#b8b4af', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.35rem' }}>Parcelas</div>
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '.2rem' }}>
+                                        {[...(c.financial_entries ?? [])].sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()).map((e) => (
+                                          <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '.75rem' }}>
+                                            <div style={{ display: 'flex', gap: '.5rem', color: '#7a7570' }}>
+                                              <span>{new Date(e.data + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
+                                              {e.parcela_numero !== null && (
+                                                <span style={{ color: '#b8965a' }}>{e.parcela_numero === 0 ? 'Entrada' : `Parc. ${e.parcela_numero}`}</span>
+                                              )}
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+                                              <span style={{ fontSize: '.65rem', color: e.status === 'confirmado' ? '#10b981' : e.status === 'pendente' ? '#f59e0b' : '#ef4444' }}>
+                                                {e.status}
+                                              </span>
+                                              <span style={{ fontWeight: 600, color: e.tipo === 'receita' ? '#10b981' : '#ef4444' }}>
+                                                {e.tipo === 'receita' ? '+' : '-'}{fmt(Number(e.valor))}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Lançamentos avulsos */}
+                      {financialEntries.length > 0 && (
+                        <div>
+                          <div style={{ fontSize: '.68rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.08em', color: '#b8b4af', marginBottom: '.6rem' }}>
+                            Todos os lançamentos
+                          </div>
+                          <div className="table-scroll-wrap">
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.8rem', minWidth: '500px' }}>
+                            <thead>
+                              <tr style={{ borderBottom: '1px solid #ebebea' }}>
+                                {['Data', 'Descrição', 'Categoria', 'Parcela', 'Valor', 'Status'].map((h) => (
+                                  <th key={h} style={{ textAlign: 'left', padding: '.4rem .6rem', fontSize: '.68rem', color: '#b8b4af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em' }}>{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {financialEntries.map((e) => (
+                                <tr key={e.id} style={{ borderBottom: '1px solid #f7f6f4' }}>
+                                  <td style={{ padding: '.5rem .6rem', color: '#7a7570', whiteSpace: 'nowrap' }}>{new Date(e.data + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
+                                  <td style={{ padding: '.5rem .6rem', color: '#0f0e0c' }}>
+                                    <div>{e.descricao}</div>
+                                    {e.contratos && (
+                                      <div style={{ fontSize: '.68rem', color: '#b8965a', marginTop: '.1rem' }}>{e.contratos.descricao}</div>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: '.5rem .6rem' }}>
+                                    {e.financial_categories && (
+                                      <span style={{ fontSize: '.68rem', padding: '.15rem .5rem', borderRadius: '6px', background: `${e.financial_categories.cor}20`, color: e.financial_categories.cor }}>
+                                        {e.financial_categories.nome}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: '.5rem .6rem', fontSize: '.72rem', color: '#b8965a', whiteSpace: 'nowrap' }}>
+                                    {e.parcela_numero !== null && e.parcelas_total
+                                      ? `${e.parcela_numero}/${e.parcelas_total}`
+                                      : e.parcela_numero === 0
+                                        ? 'Entrada'
+                                        : e.parcela_numero
+                                          ? `Parc. ${e.parcela_numero}`
+                                          : '—'}
+                                  </td>
+                                  <td style={{ padding: '.5rem .6rem', fontWeight: 500, color: e.tipo === 'receita' ? '#10b981' : '#ef4444', whiteSpace: 'nowrap' }}>
+                                    {e.tipo === 'receita' ? '+' : '-'} R$ {Number(e.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </td>
+                                  <td style={{ padding: '.5rem .6rem' }}>
+                                    <span style={{ fontSize: '.65rem', textTransform: 'uppercase', letterSpacing: '.06em', color: e.status === 'confirmado' ? '#10b981' : e.status === 'pendente' ? '#f59e0b' : '#ef4444' }}>
+                                      {e.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          </div>
+                        </div>
+                      )}
                     </div>
             )}
 
@@ -407,7 +543,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
                             </div>
                             {alteracoes && Object.entries(alteracoes).map(([campo, { anterior, novo }]) => (
                               <div key={campo} style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginTop: '.3rem', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '.68rem', color: '#7a7570', background: '#f5f4f2', padding: '.1rem .4rem', borderRadius: '2px' }}>
+                                <span style={{ fontSize: '.68rem', color: '#7a7570', background: '#f5f4f2', padding: '.1rem .4rem', borderRadius: '4px' }}>
                                   {CAMPO_LABELS[campo] ?? campo}
                                 </span>
                                 <span style={{ fontSize: '.68rem', color: '#ef4444', textDecoration: 'line-through' }}>
@@ -579,7 +715,7 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.75rem' }}>
             <SectionTitle style={{ marginBottom: 0 }}>Observações</SectionTitle>
             {!editingObs && (
-              <button onClick={() => setEditingObs(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b8965a', fontSize: '.72rem' }}>
+              <button onClick={() => setEditingObs(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7a7570', fontSize: '.72rem' }}>
                 Editar
               </button>
             )}
@@ -589,15 +725,15 @@ export function LeadProfile({ lead: initialLead }: { lead: Lead }) {
               <textarea
                 value={obsText} onChange={(e) => setObsText(e.target.value)} rows={4}
                 placeholder="Adicione observações sobre este paciente..."
-                style={{ width: '100%', border: '1px solid #e5e5e3', borderRadius: '2px', padding: '.65rem', fontSize: '.82rem', resize: 'vertical', fontFamily: 'DM Sans, sans-serif', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', border: '1px solid #ebebea', borderRadius: '6px', padding: '.65rem .75rem', fontSize: '.82rem', resize: 'vertical', fontFamily: 'DM Sans, sans-serif', outline: 'none', boxSizing: 'border-box', color: '#0f0e0c' }}
               />
               <div style={{ display: 'flex', gap: '.5rem', marginTop: '.5rem' }}>
                 <button onClick={() => { setEditingObs(false); setObsText(lead.observacoes ?? '') }}
-                  style={{ flex: 1, padding: '.5rem', border: '1px solid #e5e5e3', borderRadius: '2px', background: 'transparent', cursor: 'pointer', fontSize: '.75rem', color: '#7a7570' }}>
+                  style={{ flex: 1, padding: '.5rem', border: '1px solid #ebebea', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '.75rem', color: '#7a7570' }}>
                   Cancelar
                 </button>
                 <button onClick={handleSaveObs} disabled={savingObs}
-                  style={{ flex: 1, padding: '.5rem', border: 'none', borderRadius: '2px', background: '#b8965a', cursor: 'pointer', fontSize: '.75rem', fontWeight: 500, color: '#0f0e0c' }}>
+                  style={{ flex: 1, padding: '.5rem', border: 'none', borderRadius: '6px', background: '#0f0e0c', cursor: 'pointer', fontSize: '.75rem', fontWeight: 500, color: '#f5f0e8' }}>
                   {savingObs ? 'Salvando...' : 'Salvar'}
                 </button>
               </div>
@@ -638,7 +774,7 @@ function InfoRow({ label, value, highlight }: { label: string; value: string; hi
 
 function SummaryCard({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div style={{ padding: '.75rem', background: `${color}08`, border: `1px solid ${color}25`, borderRadius: '4px' }}>
+    <div style={{ padding: '.75rem', background: `${color}08`, border: `1px solid ${color}25`, borderRadius: '8px' }}>
       <div style={{ fontSize: '.62rem', color: '#7a7570', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.3rem' }}>{label}</div>
       <div style={{ fontSize: '.95rem', fontWeight: 600, color }}>{value}</div>
     </div>
@@ -699,10 +835,10 @@ function EditableRow({
             />
           )}
           <div style={{ display: 'flex', gap: '.35rem' }}>
-            <button onClick={onCancel} style={{ flex: 1, padding: '.35rem', border: '1px solid #e5e5e3', borderRadius: '2px', background: 'transparent', cursor: 'pointer', fontSize: '.72rem', color: '#7a7570' }}>
+            <button onClick={onCancel} style={{ flex: 1, padding: '.35rem', border: '1px solid #ebebea', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '.72rem', color: '#7a7570' }}>
               Cancelar
             </button>
-            <button onClick={() => onSave(field, fieldValue)} style={{ flex: 1, padding: '.35rem', border: 'none', borderRadius: '2px', background: '#b8965a', cursor: 'pointer', fontSize: '.72rem', fontWeight: 500, color: '#0f0e0c' }}>
+            <button onClick={() => onSave(field, fieldValue)} style={{ flex: 1, padding: '.35rem', border: 'none', borderRadius: '6px', background: '#0f0e0c', cursor: 'pointer', fontSize: '.72rem', fontWeight: 500, color: '#f5f0e8' }}>
               Salvar
             </button>
           </div>
@@ -713,7 +849,7 @@ function EditableRow({
 }
 
 const editInputStyle: React.CSSProperties = {
-  width: '100%', border: '1px solid #b8965a', borderRadius: '2px',
-  padding: '.4rem .6rem', fontSize: '.82rem', outline: 'none',
-  fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box',
+  width: '100%', border: '1px solid #ebebea', borderRadius: '6px',
+  padding: '.45rem .65rem', fontSize: '.82rem', outline: 'none',
+  fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', color: '#0f0e0c',
 }

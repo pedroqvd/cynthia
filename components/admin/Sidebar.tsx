@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -150,16 +151,13 @@ export function AdminSidebar() {
       }}>
         {!collapsed && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
-            <div style={{
-              width: '28px', height: '28px', borderRadius: '6px',
-              background: 'rgba(184,150,90,0.15)',
-              border: '1px solid rgba(184,150,90,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontSize: '1rem', fontWeight: 600, color: '#b8965a', flexShrink: 0,
-            }}>
-              C
-            </div>
+            <Image
+              src="/images/logo-cq.png"
+              alt="Cynthia"
+              width={32}
+              height={32}
+              style={{ borderRadius: '6px', flexShrink: 0, display: 'block' }}
+            />
             <div>
               <div style={{ fontSize: '.78rem', fontWeight: 500, color: '#f5f0e8', letterSpacing: '.01em' }}>Cynthia</div>
               <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '.06em', textTransform: 'uppercase' }}>Painel</div>
@@ -167,16 +165,13 @@ export function AdminSidebar() {
           </div>
         )}
         {collapsed && (
-          <div style={{
-            width: '28px', height: '28px', borderRadius: '6px',
-            background: 'rgba(184,150,90,0.15)',
-            border: '1px solid rgba(184,150,90,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
-            fontSize: '1rem', fontWeight: 600, color: '#b8965a',
-          }}>
-            C
-          </div>
+          <Image
+            src="/images/logo-cq.png"
+            alt="Cynthia"
+            width={32}
+            height={32}
+            style={{ borderRadius: '6px', display: 'block' }}
+          />
         )}
         {!collapsed && (
           <button onClick={() => setCollapsed(true)} style={collapseBtn} title="Recolher">
