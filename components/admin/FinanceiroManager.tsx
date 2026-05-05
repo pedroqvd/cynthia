@@ -1,7 +1,17 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
+
+const OpenFinanceTabComponent = lazy(() => import('./OpenFinanceTab').then(m => ({ default: m.OpenFinanceTab })))
+function OpenFinanceTabLazy() {
+  return (
+    <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', fontSize: '.82rem', color: '#b8b4af' }}>Carregando...</div>}>
+      <OpenFinanceTabComponent />
+    </Suspense>
+  )
+}
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from 'recharts'
@@ -119,7 +129,7 @@ export function FinanceiroManager({
   const [entries, setEntries] = useState(initialEntries)
   const [contratos, setContratos] = useState(initialContratos)
   const [summary, setSummary] = useState(initialSummary)
-  const [tab, setTab] = useState<'resumo' | 'lancamentos' | 'contratos'>('resumo')
+  const [tab, setTab] = useState<'resumo' | 'lancamentos' | 'contratos' | 'bancario'>('resumo')
   const [filterTipo, setFilterTipo] = useState<'todos' | 'receita' | 'despesa'>('todos')
   const [filterMes, setFilterMes] = useState(new Date().toISOString().slice(0, 7))
   const [chartData, setChartData] = useState<{ mes: string; receitas: number; despesas: number }[]>([])
@@ -299,6 +309,7 @@ export function FinanceiroManager({
           { key: 'resumo', label: 'Resumo' },
           { key: 'lancamentos', label: 'Lançamentos' },
           ...(isAdmin ? [{ key: 'contratos', label: `Contratos (${contratosAtivos.length})` }] : []),
+          { key: 'bancario', label: 'Bancário' },
         ] as { key: typeof tab; label: string }[]).map((t) => (
           <button
             key={t.key}
@@ -735,6 +746,11 @@ export function FinanceiroManager({
           )}
         </div>
       )}
+
+      {/* ═══════════════════════════════════════════════════════
+          TAB: BANCÁRIO (Open Finance)
+      ═══════════════════════════════════════════════════════ */}
+      {tab === 'bancario' && <OpenFinanceTabLazy />}
 
       {/* ═══════════════════════════════════════════════════════
           MODAL: NOVO / EDITAR LANÇAMENTO

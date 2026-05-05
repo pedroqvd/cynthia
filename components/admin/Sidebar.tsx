@@ -49,6 +49,16 @@ const NAV_PRIMARY = [
     ),
   },
   {
+    href: '/admin/analytics',
+    label: 'Analytics',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M1 12l4-4 3 3 4-5 3 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M1 15h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
     href: '/admin/whatsapp',
     label: 'WhatsApp',
     icon: (
