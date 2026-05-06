@@ -40,6 +40,10 @@ export function getClientIP(request: Request): string {
 export async function checkRateLimit(
   identifier: string
 ): Promise<Response | null> {
+  // Sem Redis configurado → skip (desenvolvimento local ou env não configurado)
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return null
+  }
   try {
     const limiter = getRateLimiter()
     const { success, limit, reset, remaining } = await limiter.limit(identifier)
