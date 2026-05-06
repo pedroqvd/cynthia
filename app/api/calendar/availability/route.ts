@@ -30,6 +30,9 @@ export async function GET(request: NextRequest) {
     const slots = await getAvailability(date)
     return apiResponse(slots)
   } catch (err) {
-    return apiError(err instanceof Error ? err.message : 'Erro ao buscar disponibilidade', 500)
+    const msg = err instanceof Error ? err.message : 'Erro ao buscar disponibilidade'
+    // Google Calendar not configured → return empty slots instead of crashing
+    if (msg.includes('GOOGLE_SERVICE_ACCOUNT_JSON')) return apiResponse([])
+    return apiError(msg, 500)
   }
 }
