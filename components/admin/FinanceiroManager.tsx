@@ -183,7 +183,11 @@ export function FinanceiroManager({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      if (!res.ok) { toast.error('Erro ao salvar.'); return }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err.error ?? 'Erro ao salvar.')
+        return
+      }
       const { data } = await res.json()
       setEntries((prev) => prev.map((e) => e.id === editingEntry.id ? { ...e, ...data } : e))
       toast.success('Lançamento atualizado.')
@@ -193,7 +197,11 @@ export function FinanceiroManager({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      if (!res.ok) { toast.error('Erro ao criar lançamento.'); return }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err.error ?? 'Erro ao criar lançamento.')
+        return
+      }
       const { data } = await res.json()
       setEntries((prev) => [data, ...prev])
       // Atualiza contrato relacionado se houver
