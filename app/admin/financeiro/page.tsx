@@ -11,7 +11,7 @@ async function getData() {
   if (!user) return { entries: [], contratos: [], categories: [], leads: [], summary: null, role: 'secretaria' }
 
   const { data: roleRow } = await supabase
-    .from('user_roles').select('role').eq('user_id', user.id).single()
+    .from('user_roles').select('role').eq('user_id', user.id).maybeSingle()
   const role = roleRow?.role ?? 'secretaria'
 
   const mesAtual = new Date().toISOString().slice(0, 7)

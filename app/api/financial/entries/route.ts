@@ -7,7 +7,7 @@ async function getAuth() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { user: null, supabase, role: null }
   const { data: roleRow } = await supabase
-    .from('user_roles').select('role').eq('user_id', user.id).single()
+    .from('user_roles').select('role').eq('user_id', user.id).maybeSingle()
   return { user, supabase, role: roleRow?.role ?? 'secretaria' }
 }
 
@@ -71,33 +71,49 @@ export async function POST(req: NextRequest) {
     return apiError('Campos obrigatórios: descricao, valor, data, tipo', 422)
   }
 
+  const insertData: Record<string, unknown> = {
+    descricao,
+    valor: Number(valor),
+    data,
+    tipo,
+    categoria_id: categoria_id || null,
+    appointment_id: appointment_id || null,
+    lead_id: lead_id || null,
+    forma_pagamento: forma_pagamento || null,
+    status: status || 'confirmado',
+    notas: notas || null,
+    created_by: user.id,
+  }
+  // Only include contrato fields if provided (columns added in migration 004)
+  if (contrato_id) insertData.contrato_id = contrato_id
+  if (parcela_numero != null) insertData.parcela_numero = Number(parcela_numero)
+  if (parcelas_total != null) insertData.parcelas_total = Number(parcelas_total)
+
   const { data: entry, error } = await supabase
     .from('financial_entries')
-    .insert({
-      descricao,
-      valor: Number(valor),
-      data,
-      tipo,
-      categoria_id: categoria_id || null,
-      appointment_id: appointment_id || null,
-      lead_id: lead_id || null,
-      forma_pagamento: forma_pagamento || null,
-      status: status || 'confirmado',
-      notas: notas || null,
-      contrato_id: contrato_id || null,
-      parcela_numero: parcela_numero ? Number(parcela_numero) : null,
-      parcelas_total: parcelas_total ? Number(parcelas_total) : null,
-      created_by: user.id,
-    })
+    .insert(insertData)
     .select(`
       *,
       financial_categories(id, nome, cor, tipo),
       leads(id, nome, whatsapp, especialidade),
-      appointments(procedimento),
-      contratos(id, descricao, valor_total, parcelas)
+      appointments(procedimento)
     `)
     .single()
 
   if (error) return apiError(error.message, 500)
-  return apiResponse(entry, 201)
+
+  // Fetch contrato separately to avoid failing when migration 004 is not applied
+  let entryWithContrato = entry as Record<string, unknown>
+  if (contrato_id) {
+    const { data: contrato } = await supabase
+      .from('contratos')
+      .select('id, descricao, valor_total, parcelas')
+      .eq('id', contrato_id as string)
+      .maybeSingle()
+    entryWithContrato = { ...entry, contratos: contrato ?? null }
+  } else {
+    entryWithContrato = { ...entry, contratos: null }
+  }
+
+  return apiResponse(entryWithContrato, 201)
 }

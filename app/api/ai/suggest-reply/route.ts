@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     .select('nome, especialidade, urgencia, status, observacoes, messages(direction, content, created_at)')
     .eq('id', leadId)
     .order('created_at', { referencedTable: 'messages', ascending: true })
-    .single()
+    .maybeSingle()
 
   if (!lead) return NextResponse.json({ error: 'Lead não encontrado' }, { status: 404 })
 

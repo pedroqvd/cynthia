@@ -16,7 +16,7 @@ async function getPost(slug: string) {
     .select('*')
     .eq('slug', slug)
     .eq('published', true)
-    .single()
+    .maybeSingle()
   
   return post
 }

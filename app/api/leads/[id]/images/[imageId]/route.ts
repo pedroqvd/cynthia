@@ -20,7 +20,7 @@ export async function DELETE(
     .select('path')
     .eq('id', params.imageId)
     .eq('lead_id', params.id)
-    .single()
+    .maybeSingle()
 
   if (!image) return apiError('Imagem não encontrada', 404)
 

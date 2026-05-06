@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       .from('leads')
       .select('nome, whatsapp, email')
       .eq('id', lead_id)
-      .single()
+      .maybeSingle()
 
     if (lead) {
       leadNome = lead.nome

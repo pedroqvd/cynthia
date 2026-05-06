@@ -130,7 +130,7 @@ export function LeadProfile({ lead: initialLead, initialTab }: { lead: Lead; ini
 
   useEffect(() => {
     fetch(`/api/financial/entries?lead_id=${lead.id}`)
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject())
       .then((j) => {
         const entries = (j.data ?? j) as { tipo: string; valor: number; status: string }[]
         const confirmed = entries.filter((e) => e.status === 'confirmado')

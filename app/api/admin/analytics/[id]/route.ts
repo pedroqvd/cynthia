@@ -1,0 +1,20 @@
+import { NextRequest } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { apiResponse, apiError } from '@/lib/utils'
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return apiError('Não autorizado', 401)
+
+  const { error } = await supabase
+    .from('social_metrics')
+    .delete()
+    .eq('id', params.id)
+
+  if (error) return apiError(error.message, 500)
+  return apiResponse({ ok: true })
+}

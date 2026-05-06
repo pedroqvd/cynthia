@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Editar Artigo' }
 
 async function getPost(id: string) {
   const supabase = createClient()
-  const { data } = await supabase.from('posts').select('*').eq('id', id).single()
+  const { data } = await supabase.from('posts').select('*').eq('id', id).maybeSingle()
   return data
 }
 

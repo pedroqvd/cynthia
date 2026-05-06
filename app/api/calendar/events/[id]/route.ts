@@ -18,16 +18,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   const { status, procedimento, data_hora, duracao_min, notas } = body as Record<string, string>
 
-  // Busca o appointment para pegar o google_event_id
   const { data: appt, error: fetchErr } = await supabase
     .from('appointments')
     .select('google_event_id, lead_id, procedimento, data_hora, duracao_min')
     .eq('id', params.id)
-    .single()
+    .maybeSingle()
 
   if (fetchErr || !appt) return apiError('Agendamento não encontrado', 404)
 
-  // Atualiza no Supabase
   const updateData: Record<string, unknown> = {}
   if (status) updateData.status = status
   if (procedimento) updateData.procedimento = procedimento
@@ -44,22 +42,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   if (error) return apiError(error.message, 500)
 
-  // Sincroniza com Google Calendar se tiver google_event_id e dados mudaram
   if (appt.google_event_id && (procedimento || data_hora || duracao_min)) {
     try {
       const newProcedimento = procedimento ?? appt.procedimento
       const newDataHora = data_hora ?? appt.data_hora
       const newDuracao = Number(duracao_min ?? appt.duracao_min)
       const endIso = new Date(new Date(newDataHora).getTime() + newDuracao * 60000).toISOString()
-
-      await updateEvent(appt.google_event_id, {
-        title: newProcedimento,
-        startIso: newDataHora,
-        endIso,
-      })
+      await updateEvent(appt.google_event_id, { title: newProcedimento, startIso: newDataHora, endIso })
     } catch (err) {
       console.error('[Calendar] Erro ao atualizar evento:', err)
-      // Não falha a requisição — DB já foi atualizado
     }
   }
 
@@ -72,23 +63,18 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return apiError('Não autorizado', 401)
 
-  // Busca o google_event_id antes de deletar
   const { data: appt } = await supabase
     .from('appointments')
     .select('google_event_id, lead_id')
     .eq('id', params.id)
-    .single()
+    .maybeSingle()
 
-  // Remove do Google Calendar
   if (appt?.google_event_id) {
-    try {
-      await deleteEvent(appt.google_event_id)
-    } catch (err) {
+    try { await deleteEvent(appt.google_event_id) } catch (err) {
       console.error('[Calendar] Erro ao remover evento:', err)
     }
   }
 
-  // Remove do Supabase (ou marca como cancelado)
   const { error } = await supabase
     .from('appointments')
     .update({ status: 'cancelado' })
@@ -96,7 +82,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 
   if (error) return apiError(error.message, 500)
 
-  // Log de atividade
   if (appt?.lead_id) {
     await supabase.from('activity_log').insert({
       lead_id: appt.lead_id,

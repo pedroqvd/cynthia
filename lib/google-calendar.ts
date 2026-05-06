@@ -8,11 +8,10 @@ const CALENDAR_SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 /** Inicializa o cliente autenticado via Service Account */
 function getCalendarClient(): calendar_v3.Calendar {
-  const serviceAccountJson = Buffer.from(
-    process.env.GOOGLE_SERVICE_ACCOUNT_JSON!,
-    'base64'
-  ).toString('utf-8')
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+  if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON não configurado')
 
+  const serviceAccountJson = Buffer.from(raw, 'base64').toString('utf-8')
   const credentials = JSON.parse(serviceAccountJson)
 
   const auth = new google.auth.GoogleAuth({

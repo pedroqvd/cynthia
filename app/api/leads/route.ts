@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     .from('leads')
     .select('id, status')
     .eq('whatsapp', data.whatsapp)
-    .single()
+    .maybeSingle()
 
   if (existing) {
     // Atualiza dados e retorna o lead existente

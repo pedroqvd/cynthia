@@ -42,13 +42,16 @@ export async function POST(request: NextRequest) {
   const supabase = createAdminClient()
   const data = parsed.data
 
+  // Normaliza WhatsApp para dígitos apenas
+  const whatsappNorm = data.whatsapp.replace(/\D/g, '')
+
   // Cria ou atualiza lead
   let leadId: string
   const { data: existing } = await supabase
     .from('leads')
     .select('id')
-    .eq('whatsapp', data.whatsapp)
-    .single()
+    .eq('whatsapp', whatsappNorm)
+    .maybeSingle()
 
   if (existing) {
     leadId = existing.id
@@ -64,7 +67,7 @@ export async function POST(request: NextRequest) {
       .from('leads')
       .insert({
         nome: data.nome,
-        whatsapp: data.whatsapp,
+        whatsapp: whatsappNorm,
         email: data.email || null,
         especialidade: data.especialidade || null,
         origem: 'site',

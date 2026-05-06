@@ -61,7 +61,7 @@ export async function PATCH(
     .from('leads')
     .select('*')
     .eq('id', params.id)
-    .single()
+    .maybeSingle()
 
   const { data, error } = await supabase
     .from('leads')
