@@ -27,7 +27,7 @@ async function getLead(id: string) {
   return data
 }
 
-export default async function LeadPage({ params }: { params: { id: string } }) {
+export default async function LeadPage({ params, searchParams }: { params: { id: string }; searchParams: { tab?: string } }) {
   const lead = await getLead(params.id)
   if (!lead) notFound()
 
@@ -42,7 +42,7 @@ export default async function LeadPage({ params }: { params: { id: string } }) {
         <span style={{ color: '#0f0e0c' }}>{lead.nome}</span>
       </div>
 
-      <LeadProfile lead={lead} />
+      <LeadProfile lead={lead} initialTab={searchParams.tab} />
     </div>
   )
 }
