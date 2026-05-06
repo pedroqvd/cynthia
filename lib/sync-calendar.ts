@@ -12,7 +12,7 @@ export async function syncCalendarToSupabase() {
       .from('appointments')
       .select('id')
       .eq('google_event_id', event.id)
-      .single()
+      .maybeSingle()
 
     const payload = {
       google_event_id: event.id,
