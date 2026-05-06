@@ -7,7 +7,7 @@ async function getAuth() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { user: null, supabase, role: null }
   const { data: roleRow } = await supabase
-    .from('user_roles').select('role').eq('user_id', user.id).single()
+    .from('user_roles').select('role').eq('user_id', user.id).maybeSingle()
   return { user, supabase, role: roleRow?.role ?? 'secretaria' }
 }
 
@@ -15,8 +15,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { user, supabase } = await getAuth()
+  const { user, supabase, role } = await getAuth()
   if (!user) return apiError('Não autorizado', 401)
+  if (role !== 'admin') return apiError('Sem permissão', 403)
 
   let body: Record<string, unknown>
   try { body = await req.json() } catch { return apiError('JSON inválido', 400) }

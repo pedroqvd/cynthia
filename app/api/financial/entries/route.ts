@@ -7,7 +7,7 @@ async function getAuth() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { user: null, supabase, role: null }
   const { data: roleRow } = await supabase
-    .from('user_roles').select('role').eq('user_id', user.id).single()
+    .from('user_roles').select('role').eq('user_id', user.id).maybeSingle()
   return { user, supabase, role: roleRow?.role ?? 'secretaria' }
 }
 
