@@ -276,7 +276,7 @@ export function Agendamento({ imgUrl }: { imgUrl?: string }) {
                     </div>
                   ) : slots.length === 0 ? (
                     <div style={{ ...inputStyle, color: 'rgba(245,240,230,0.4)', display: 'flex', alignItems: 'center' }}>
-                      Sem horários disponíveis
+                      Sem horários disponíveis — envie sua solicitação e entraremos em contato
                     </div>
                   ) : (
                     <select

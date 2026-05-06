@@ -35,10 +35,16 @@ interface WppSendResult {
   contacts: Array<{ wa_id: string }>
 }
 
+function getWppCredentials() {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+  if (!phoneNumberId || !accessToken) throw new Error('WhatsApp credentials not configured')
+  return { phoneNumberId, accessToken }
+}
+
 /** Envia mensagem de texto livre */
 export async function sendTextMessage({ to, text }: WppTextMessage): Promise<WppSendResult> {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID!
-  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN!
+  const { phoneNumberId, accessToken } = getWppCredentials()
 
   const payload = {
     messaging_product: 'whatsapp',
@@ -72,8 +78,7 @@ export async function sendTemplateMessage({
   languageCode = 'pt_BR',
   components = [],
 }: WppTemplateMessage): Promise<WppSendResult> {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID!
-  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN!
+  const { phoneNumberId, accessToken } = getWppCredentials()
 
   const payload = {
     messaging_product: 'whatsapp',

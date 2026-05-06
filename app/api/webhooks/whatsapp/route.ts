@@ -82,7 +82,7 @@ async function processIncomingMessage(
     .from('leads')
     .select('id, nome, status')
     .eq('whatsapp', phone)
-    .single()
+    .maybeSingle()
 
   let leadId: string
 

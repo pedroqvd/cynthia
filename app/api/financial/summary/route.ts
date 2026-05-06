@@ -7,7 +7,7 @@ export async function GET() {
   if (!user) return apiError('Não autorizado', 401)
 
   const { data: roleRow } = await supabase
-    .from('user_roles').select('role').eq('user_id', user.id).single()
+    .from('user_roles').select('role').eq('user_id', user.id).maybeSingle()
   const role = roleRow?.role ?? 'secretaria'
 
   // Últimos 6 meses
