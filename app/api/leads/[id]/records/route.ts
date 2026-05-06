@@ -23,7 +23,7 @@ export async function GET(
     .from('patient_records')
     .select('*')
     .eq('lead_id', params.id)
-    .single()
+    .maybeSingle()
 
   return apiResponse(data ?? null)
 }

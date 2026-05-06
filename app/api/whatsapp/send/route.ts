@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     .from('leads')
     .select('id, nome, whatsapp')
     .eq('id', lead_id)
-    .single()
+    .maybeSingle()
 
   if (!lead) {
     return apiError('Lead não encontrado', 404)

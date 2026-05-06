@@ -12,6 +12,7 @@ export async function sendConfirmationEmail(params: {
   dataHora: string
   endereco: string
 }) {
+  if (!process.env.RESEND_API_KEY) return { error: 'RESEND_API_KEY not configured' }
   const resend = new Resend(process.env.RESEND_API_KEY)
   return resend.emails.send({
     from: `Dra. Cynthia <${FROM}>`,
@@ -48,8 +49,10 @@ export async function sendNewLeadEmail(params: {
   especialidade: string
   origem: string
 }) {
+  if (!process.env.RESEND_API_KEY) return { error: 'RESEND_API_KEY not configured' }
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const adminEmail = process.env.RESEND_FROM_EMAIL!
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL ?? process.env.RESEND_FROM_EMAIL
+  if (!adminEmail) return { error: 'Admin notification email not configured' }
   return resend.emails.send({
     from: `Sistema Cynthia <${FROM}>`,
     to: adminEmail,
