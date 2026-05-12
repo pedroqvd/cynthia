@@ -34,6 +34,7 @@ begin
 end;
 $$;
 
+drop trigger if exists leads_updated_at on leads;
 create trigger leads_updated_at
   before update on leads
   for each row execute function update_updated_at();
@@ -55,8 +56,8 @@ create table if not exists messages (
   created_at           timestamptz not null default now()
 );
 
-create index idx_messages_lead_id on messages(lead_id);
-create index idx_messages_created_at on messages(created_at desc);
+create index if not exists idx_messages_lead_id    on messages(lead_id);
+create index if not exists idx_messages_created_at on messages(created_at desc);
 
 -- ────────────────────────────────────────────────────────────────
 -- APPOINTMENTS
@@ -74,8 +75,8 @@ create table if not exists appointments (
   created_at       timestamptz not null default now()
 );
 
-create index idx_appointments_data_hora on appointments(data_hora);
-create index idx_appointments_lead_id on appointments(lead_id);
+create index if not exists idx_appointments_data_hora on appointments(data_hora);
+create index if not exists idx_appointments_lead_id   on appointments(lead_id);
 
 -- ────────────────────────────────────────────────────────────────
 -- BEFORE / AFTER (galeria de resultados)
@@ -115,7 +116,8 @@ insert into testimonials (nome, cargo, texto, nota, ativo, ordem) values
    5, true, 2),
   ('Luciana F.', 'Médica — Brasília',
    'Sofria com dor na mandíbula há anos. Em três meses de tratamento com ela, resolvi algo que nenhum outro especialista tinha conseguido.',
-   5, true, 3);
+   5, true, 3)
+on conflict do nothing;
 
 -- ────────────────────────────────────────────────────────────────
 -- ACTIVITY LOG
@@ -129,8 +131,8 @@ create table if not exists activity_log (
   created_at timestamptz not null default now()
 );
 
-create index idx_activity_log_lead_id on activity_log(lead_id);
-create index idx_activity_log_created_at on activity_log(created_at desc);
+create index if not exists idx_activity_log_lead_id    on activity_log(lead_id);
+create index if not exists idx_activity_log_created_at on activity_log(created_at desc);
 
 -- ────────────────────────────────────────────────────────────────
 -- SITE CONFIG (chave-valor para configurações editáveis)
@@ -162,7 +164,6 @@ on conflict (key) do nothing;
 -- ROW LEVEL SECURITY
 -- ────────────────────────────────────────────────────────────────
 
--- Habilita RLS em todas as tabelas
 alter table leads enable row level security;
 alter table messages enable row level security;
 alter table appointments enable row level security;
@@ -171,62 +172,74 @@ alter table testimonials enable row level security;
 alter table activity_log enable row level security;
 alter table site_config enable row level security;
 
--- Leads: autenticados têm acesso total
+-- Leads
+drop policy if exists "Leads: acesso total para autenticados" on leads;
 create policy "Leads: acesso total para autenticados"
   on leads for all
   using (auth.uid() is not null)
   with check (auth.uid() is not null);
 
--- Messages: insert público (webhook), resto autenticado
+-- Messages
+drop policy if exists "Messages: insert público (webhook)" on messages;
 create policy "Messages: insert público (webhook)"
   on messages for insert
   with check (true);
 
+drop policy if exists "Messages: leitura e atualização para autenticados" on messages;
 create policy "Messages: leitura e atualização para autenticados"
   on messages for select
   using (auth.uid() is not null);
 
+drop policy if exists "Messages: update para autenticados" on messages;
 create policy "Messages: update para autenticados"
   on messages for update
   using (auth.uid() is not null);
 
--- Appointments: autenticados têm acesso total
+-- Appointments
+drop policy if exists "Appointments: acesso total para autenticados" on appointments;
 create policy "Appointments: acesso total para autenticados"
   on appointments for all
   using (auth.uid() is not null)
   with check (auth.uid() is not null);
 
--- Before/After: leitura pública, escrita autenticada
+-- Before/After
+drop policy if exists "BeforeAfter: leitura pública" on before_after;
 create policy "BeforeAfter: leitura pública"
   on before_after for select
   using (ativo = true);
 
+drop policy if exists "BeforeAfter: escrita autenticada" on before_after;
 create policy "BeforeAfter: escrita autenticada"
   on before_after for all
   using (auth.uid() is not null)
   with check (auth.uid() is not null);
 
--- Testimonials: leitura pública, escrita autenticada
+-- Testimonials
+drop policy if exists "Testimonials: leitura pública" on testimonials;
 create policy "Testimonials: leitura pública"
   on testimonials for select
   using (ativo = true);
 
+drop policy if exists "Testimonials: escrita autenticada" on testimonials;
 create policy "Testimonials: escrita autenticada"
   on testimonials for all
   using (auth.uid() is not null)
   with check (auth.uid() is not null);
 
--- Activity log: autenticados têm acesso total
+-- Activity log
+drop policy if exists "ActivityLog: acesso total para autenticados" on activity_log;
 create policy "ActivityLog: acesso total para autenticados"
   on activity_log for all
   using (auth.uid() is not null)
   with check (auth.uid() is not null);
 
--- Site config: leitura pública, escrita autenticada
+-- Site config
+drop policy if exists "SiteConfig: leitura pública" on site_config;
 create policy "SiteConfig: leitura pública"
   on site_config for select
   using (true);
 
+drop policy if exists "SiteConfig: escrita autenticada" on site_config;
 create policy "SiteConfig: escrita autenticada"
   on site_config for all
   using (auth.uid() is not null)

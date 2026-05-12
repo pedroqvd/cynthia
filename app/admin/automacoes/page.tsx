@@ -38,6 +38,14 @@ const AUTOMACOES = [
     endpoint: '/api/cron/sync-calendar',
     cor: '#163D32',
   },
+  {
+    id: 'avaliacao',
+    nome: 'Solicitação de avaliação',
+    descricao: 'Envia WhatsApp pedindo avaliação no Google 24–48h após a consulta realizada.',
+    horario: 'Todo dia às 12h BRT',
+    endpoint: '/api/cron/avaliacao',
+    cor: '#5A6B1B',
+  },
 ]
 
 export default function AutomacoesPage() {

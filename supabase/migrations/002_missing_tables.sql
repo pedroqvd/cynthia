@@ -32,19 +32,22 @@ create table if not exists posts (
   updated_at  timestamptz not null default now()
 );
 
-create index if not exists idx_posts_slug       on posts(slug);
-create index if not exists idx_posts_published  on posts(published, created_at desc);
+create index if not exists idx_posts_slug      on posts(slug);
+create index if not exists idx_posts_published on posts(published, created_at desc);
 
+drop trigger if exists posts_updated_at on posts;
 create trigger posts_updated_at
   before update on posts
   for each row execute function update_updated_at();
 
 alter table posts enable row level security;
 
+drop policy if exists "Posts: leitura pública dos publicados" on posts;
 create policy "Posts: leitura pública dos publicados"
   on posts for select
   using (published = true);
 
+drop policy if exists "Posts: acesso total para autenticados" on posts;
 create policy "Posts: acesso total para autenticados"
   on posts for all
   using (auth.uid() is not null)
@@ -62,11 +65,13 @@ create table if not exists user_roles (
 
 alter table user_roles enable row level security;
 
+drop policy if exists "UserRoles: leitura para autenticados" on user_roles;
 create policy "UserRoles: leitura para autenticados"
   on user_roles for select
   to authenticated
   using (true);
 
+drop policy if exists "UserRoles: gerenciamento pelo service_role" on user_roles;
 create policy "UserRoles: gerenciamento pelo service_role"
   on user_roles for all
   to service_role
@@ -87,11 +92,13 @@ create table if not exists financial_categories (
 
 alter table financial_categories enable row level security;
 
+drop policy if exists "FinancialCategories: leitura para autenticados" on financial_categories;
 create policy "FinancialCategories: leitura para autenticados"
   on financial_categories for select
   to authenticated
   using (true);
 
+drop policy if exists "FinancialCategories: gerenciamento pelo service_role" on financial_categories;
 create policy "FinancialCategories: gerenciamento pelo service_role"
   on financial_categories for all
   to service_role
@@ -130,31 +137,36 @@ create table if not exists financial_entries (
   updated_at       timestamptz not null default now()
 );
 
-create index if not exists idx_financial_entries_data        on financial_entries(data desc);
-create index if not exists idx_financial_entries_lead_id     on financial_entries(lead_id);
-create index if not exists idx_financial_entries_categoria   on financial_entries(categoria_id);
+create index if not exists idx_financial_entries_data      on financial_entries(data desc);
+create index if not exists idx_financial_entries_lead_id   on financial_entries(lead_id);
+create index if not exists idx_financial_entries_categoria on financial_entries(categoria_id);
 
+drop trigger if exists financial_entries_updated_at on financial_entries;
 create trigger financial_entries_updated_at
   before update on financial_entries
   for each row execute function update_updated_at();
 
 alter table financial_entries enable row level security;
 
+drop policy if exists "FinancialEntries: leitura para autenticados" on financial_entries;
 create policy "FinancialEntries: leitura para autenticados"
   on financial_entries for select
   to authenticated
   using (true);
 
+drop policy if exists "FinancialEntries: insert para autenticados" on financial_entries;
 create policy "FinancialEntries: insert para autenticados"
   on financial_entries for insert
   to authenticated
   with check (true);
 
+drop policy if exists "FinancialEntries: update para autenticados" on financial_entries;
 create policy "FinancialEntries: update para autenticados"
   on financial_entries for update
   to authenticated
   using (true);
 
+drop policy if exists "FinancialEntries: gerenciamento pelo service_role" on financial_entries;
 create policy "FinancialEntries: gerenciamento pelo service_role"
   on financial_entries for all
   to service_role
