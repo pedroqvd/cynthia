@@ -114,6 +114,7 @@ export interface Database {
           duracao_min: number
           status: 'agendado' | 'confirmado' | 'realizado' | 'cancelado'
           notas: string | null
+          avaliacao_enviada: boolean
           created_at: string
         }
         Insert: {
@@ -125,6 +126,7 @@ export interface Database {
           duracao_min?: number
           status?: 'agendado' | 'confirmado' | 'realizado' | 'cancelado'
           notas?: string | null
+          avaliacao_enviada?: boolean
           created_at?: string
         }
         Update: {
@@ -136,6 +138,7 @@ export interface Database {
           duracao_min?: number
           status?: 'agendado' | 'confirmado' | 'realizado' | 'cancelado'
           notas?: string | null
+          avaliacao_enviada?: boolean
         }
         Relationships: [
           {
@@ -322,6 +325,9 @@ export interface Database {
           categoria_id: string | null
           lead_id: string | null
           appointment_id: string | null
+          contrato_id: string | null
+          parcela_numero: number | null
+          parcelas_total: number | null
           forma_pagamento: string | null
           status: 'pendente' | 'confirmado' | 'cancelado'
           notas: string | null
@@ -338,6 +344,9 @@ export interface Database {
           categoria_id?: string | null
           lead_id?: string | null
           appointment_id?: string | null
+          contrato_id?: string | null
+          parcela_numero?: number | null
+          parcelas_total?: number | null
           forma_pagamento?: string | null
           status?: 'pendente' | 'confirmado' | 'cancelado'
           notas?: string | null
@@ -354,6 +363,9 @@ export interface Database {
           categoria_id?: string | null
           lead_id?: string | null
           appointment_id?: string | null
+          contrato_id?: string | null
+          parcela_numero?: number | null
+          parcelas_total?: number | null
           forma_pagamento?: string | null
           status?: 'pendente' | 'confirmado' | 'cancelado'
           notas?: string | null
@@ -379,6 +391,185 @@ export interface Database {
             referencedColumns: ['id']
           }
         ]
+      }
+      posts: {
+        Row: {
+          id: string
+          title: string
+          slug: string
+          excerpt: string | null
+          content: string | null
+          cover_image: string | null
+          published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          slug: string
+          excerpt?: string | null
+          content?: string | null
+          cover_image?: string | null
+          published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          slug?: string
+          excerpt?: string | null
+          content?: string | null
+          cover_image?: string | null
+          published?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contratos: {
+        Row: {
+          id: string
+          lead_id: string
+          descricao: string
+          valor_total: number
+          parcelas: number
+          valor_entrada: number
+          data_inicio: string
+          status: 'ativo' | 'quitado' | 'cancelado'
+          notas: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          descricao: string
+          valor_total: number
+          parcelas?: number
+          valor_entrada?: number
+          data_inicio?: string
+          status?: 'ativo' | 'quitado' | 'cancelado'
+          notas?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          descricao?: string
+          valor_total?: number
+          parcelas?: number
+          valor_entrada?: number
+          data_inicio?: string
+          status?: 'ativo' | 'quitado' | 'cancelado'
+          notas?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'contratos_lead_id_fkey'
+            columns: ['lead_id']
+            referencedRelation: 'leads'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      social_metrics: {
+        Row: {
+          id: string
+          platform: 'instagram' | 'tiktok' | 'linkedin' | 'x' | 'facebook'
+          periodo: string
+          seguidores: number
+          novos_seguidores: number
+          alcance: number
+          impressoes: number
+          engajamento: number
+          curtidas: number
+          comentarios: number
+          compartilhamentos: number
+          salvamentos: number
+          visitas_perfil: number
+          cliques_link: number
+          notas: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          platform: 'instagram' | 'tiktok' | 'linkedin' | 'x' | 'facebook'
+          periodo: string
+          seguidores?: number
+          novos_seguidores?: number
+          alcance?: number
+          impressoes?: number
+          engajamento?: number
+          curtidas?: number
+          comentarios?: number
+          compartilhamentos?: number
+          salvamentos?: number
+          visitas_perfil?: number
+          cliques_link?: number
+          notas?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          platform?: 'instagram' | 'tiktok' | 'linkedin' | 'x' | 'facebook'
+          periodo?: string
+          seguidores?: number
+          novos_seguidores?: number
+          alcance?: number
+          impressoes?: number
+          engajamento?: number
+          curtidas?: number
+          comentarios?: number
+          compartilhamentos?: number
+          salvamentos?: number
+          visitas_perfil?: number
+          cliques_link?: number
+          notas?: string | null
+        }
+        Relationships: []
+      }
+      bank_connections: {
+        Row: {
+          id: string
+          item_id: string
+          connector_name: string | null
+          account_name: string | null
+          account_number: string | null
+          account_type: string
+          balance: number
+          status: 'active' | 'error' | 'updating'
+          last_sync: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          connector_name?: string | null
+          account_name?: string | null
+          account_number?: string | null
+          account_type?: string
+          balance?: number
+          status?: 'active' | 'error' | 'updating'
+          last_sync?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          connector_name?: string | null
+          account_name?: string | null
+          account_number?: string | null
+          account_type?: string
+          balance?: number
+          status?: 'active' | 'error' | 'updating'
+          last_sync?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -407,3 +598,7 @@ export type SiteConfig = Database['public']['Tables']['site_config']['Row']
 export type UserRole = Database['public']['Tables']['user_roles']['Row']
 export type FinancialCategory = Database['public']['Tables']['financial_categories']['Row']
 export type FinancialEntry = Database['public']['Tables']['financial_entries']['Row']
+export type Post = Database['public']['Tables']['posts']['Row']
+export type Contrato = Database['public']['Tables']['contratos']['Row']
+export type SocialMetric = Database['public']['Tables']['social_metrics']['Row']
+export type BankConnection = Database['public']['Tables']['bank_connections']['Row']

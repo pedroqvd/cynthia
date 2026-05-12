@@ -19,12 +19,14 @@ create table if not exists patient_records (
   unique(lead_id)
 );
 
+drop trigger if exists patient_records_updated_at on patient_records;
 create trigger patient_records_updated_at
   before update on patient_records
   for each row execute function update_updated_at();
 
 alter table patient_records enable row level security;
 
+drop policy if exists "PatientRecords: acesso total para autenticados" on patient_records;
 create policy "PatientRecords: acesso total para autenticados"
   on patient_records for all
   using (auth.uid() is not null)
@@ -48,6 +50,7 @@ create index if not exists idx_clinical_notes_created_at on clinical_notes(creat
 
 alter table clinical_notes enable row level security;
 
+drop policy if exists "ClinicalNotes: acesso total para autenticados" on clinical_notes;
 create policy "ClinicalNotes: acesso total para autenticados"
   on clinical_notes for all
   using (auth.uid() is not null)
@@ -72,6 +75,7 @@ create index if not exists idx_patient_images_lead_id on patient_images(lead_id)
 
 alter table patient_images enable row level security;
 
+drop policy if exists "PatientImages: acesso total para autenticados" on patient_images;
 create policy "PatientImages: acesso total para autenticados"
   on patient_images for all
   using (auth.uid() is not null)
@@ -95,12 +99,14 @@ create table if not exists patient_tasks (
 create index if not exists idx_patient_tasks_lead_id on patient_tasks(lead_id);
 create index if not exists idx_patient_tasks_status  on patient_tasks(status);
 
+drop trigger if exists patient_tasks_updated_at on patient_tasks;
 create trigger patient_tasks_updated_at
   before update on patient_tasks
   for each row execute function update_updated_at();
 
 alter table patient_tasks enable row level security;
 
+drop policy if exists "PatientTasks: acesso total para autenticados" on patient_tasks;
 create policy "PatientTasks: acesso total para autenticados"
   on patient_tasks for all
   using (auth.uid() is not null)
