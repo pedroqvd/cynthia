@@ -63,6 +63,17 @@ export async function PATCH(
     .eq('id', params.id)
     .maybeSingle()
 
+  // Verifica unicidade do WhatsApp se estiver sendo alterado
+  if (parsed.data.whatsapp && parsed.data.whatsapp !== (current as Record<string, unknown>)?.whatsapp) {
+    const { data: conflict } = await supabase
+      .from('leads')
+      .select('id')
+      .eq('whatsapp', parsed.data.whatsapp)
+      .neq('id', params.id)
+      .maybeSingle()
+    if (conflict) return apiError('Já existe um lead com esse WhatsApp', 409)
+  }
+
   const { data, error } = await supabase
     .from('leads')
     .update({ ...parsed.data, updated_at: new Date().toISOString() })

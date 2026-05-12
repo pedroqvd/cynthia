@@ -52,17 +52,19 @@ export async function POST(req: NextRequest) {
 
   const totalNum = Number(valor_total)
   const entradaNum = Number(valor_entrada ?? 0)
+  const parcelasNum = Number(parcelas ?? 1)
   if (isNaN(totalNum) || totalNum <= 0) return apiError('valor_total deve ser positivo', 422)
   if (entradaNum < 0) return apiError('valor_entrada não pode ser negativo', 422)
   if (entradaNum > totalNum) return apiError('valor_entrada não pode ser maior que o valor total', 422)
+  if (!Number.isInteger(parcelasNum) || parcelasNum < 1) return apiError('parcelas deve ser um número inteiro >= 1', 422)
 
   const { data, error } = await supabase
     .from('contratos')
     .insert({
       lead_id,
       descricao,
-      valor_total: Number(valor_total),
-      parcelas: Number(parcelas ?? 1),
+      valor_total: totalNum,
+      parcelas: parcelasNum,
       valor_entrada: Number(valor_entrada ?? 0),
       data_inicio: data_inicio || new Date().toISOString().split('T')[0],
       notas: notas || null,
