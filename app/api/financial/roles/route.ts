@@ -46,8 +46,11 @@ export async function PATCH(req: NextRequest) {
   if (!user) return apiError('Não autorizado', 401)
   if (!isAdmin) return apiError('Sem permissão', 403)
 
-  const { user_id, role, nome } = await req.json()
+  let body: { user_id?: string; role?: string; nome?: string }
+  try { body = await req.json() } catch { return apiError('JSON inválido', 400) }
+  const { user_id, role, nome } = body
   if (!user_id || !role) return apiError('user_id e role obrigatórios', 422)
+  if (!['admin', 'secretaria'].includes(role)) return apiError('role inválido', 422)
 
   const adminClient = createAdminClient()
   const { error } = await adminClient

@@ -22,9 +22,19 @@ export async function PATCH(
   let body: Record<string, unknown>
   try { body = await req.json() } catch { return apiError('JSON inválido', 400) }
 
+  const ALLOWED: (keyof typeof body)[] = [
+    'descricao', 'valor', 'data', 'tipo', 'categoria_id',
+    'lead_id', 'appointment_id', 'contrato_id', 'parcela_numero',
+    'parcelas_total', 'forma_pagamento', 'status', 'notas',
+  ]
+  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  for (const key of ALLOWED) {
+    if (key in body) patch[key] = body[key]
+  }
+
   const { data, error } = await supabase
     .from('financial_entries')
-    .update({ ...body, updated_at: new Date().toISOString() })
+    .update(patch)
     .eq('id', params.id)
     .select()
     .single()

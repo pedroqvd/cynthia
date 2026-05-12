@@ -123,8 +123,9 @@ function FichaClinica({ leadId }: { leadId: string }) {
 
   useEffect(() => {
     fetch(`/api/leads/${leadId}/records`)
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject())
       .then((j) => setRecord(j.data ?? {}))
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [leadId])
 
@@ -260,8 +261,9 @@ function EvolucaoClinica({
 
   useEffect(() => {
     fetch(`/api/leads/${leadId}/notes`)
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject())
       .then((j) => setNotes(j.data ?? []))
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [leadId])
 
@@ -409,8 +411,9 @@ function PatientImages({ leadId }: { leadId: string }) {
 
   useEffect(() => {
     fetch(`/api/leads/${leadId}/images`)
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject())
       .then((j) => setImages(j.data ?? []))
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [leadId])
 
@@ -589,8 +592,9 @@ function PatientTasks({ leadId }: { leadId: string }) {
 
   useEffect(() => {
     fetch(`/api/leads/${leadId}/tasks`)
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject())
       .then((j) => setTasks(j.data ?? []))
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [leadId])
 

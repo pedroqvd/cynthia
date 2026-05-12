@@ -25,7 +25,8 @@ export async function DELETE(
   if (!image) return apiError('Imagem não encontrada', 404)
 
   const admin = createAdminClient()
-  await admin.storage.from(BUCKET).remove([image.path])
+  const { error: storageError } = await admin.storage.from(BUCKET).remove([image.path])
+  if (storageError) console.error('[images] Falha ao remover arquivo do storage:', storageError)
 
   const { error } = await supabase
     .from('patient_images')
