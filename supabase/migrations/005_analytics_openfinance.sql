@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS social_metrics (
   UNIQUE(platform, periodo)
 );
 ALTER TABLE social_metrics ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "admin_social" ON social_metrics;
 CREATE POLICY "admin_social" ON social_metrics FOR ALL USING (auth.role() = 'authenticated');
 
 CREATE TABLE IF NOT EXISTS bank_connections (
@@ -33,4 +34,5 @@ CREATE TABLE IF NOT EXISTS bank_connections (
   created_at timestamptz DEFAULT now()
 );
 ALTER TABLE bank_connections ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "admin_bank" ON bank_connections;
 CREATE POLICY "admin_bank" ON bank_connections FOR ALL USING (auth.role() = 'authenticated');

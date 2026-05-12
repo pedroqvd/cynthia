@@ -31,27 +31,32 @@ create table if not exists contratos (
 create index if not exists idx_contratos_lead_id on contratos(lead_id);
 create index if not exists idx_contratos_status  on contratos(status);
 
+drop trigger if exists contratos_updated_at on contratos;
 create trigger contratos_updated_at
   before update on contratos
   for each row execute function update_updated_at();
 
 alter table contratos enable row level security;
 
+drop policy if exists "Contratos: leitura para autenticados" on contratos;
 create policy "Contratos: leitura para autenticados"
   on contratos for select
   to authenticated
   using (true);
 
+drop policy if exists "Contratos: insert para autenticados" on contratos;
 create policy "Contratos: insert para autenticados"
   on contratos for insert
   to authenticated
   with check (true);
 
+drop policy if exists "Contratos: update para autenticados" on contratos;
 create policy "Contratos: update para autenticados"
   on contratos for update
   to authenticated
   using (true);
 
+drop policy if exists "Contratos: delete para autenticados" on contratos;
 create policy "Contratos: delete para autenticados"
   on contratos for delete
   to authenticated
