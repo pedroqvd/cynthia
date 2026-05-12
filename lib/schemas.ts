@@ -43,7 +43,7 @@ export type AgendamentoInput = z.infer<typeof agendamentoSchema>
 export const leadSchema = z.object({
   nome: z.string().min(2).max(100),
   cpf: z.string().regex(cpfRegex, 'CPF inválido').optional().or(z.literal('')),
-  whatsapp: z.string().min(10),
+  whatsapp: z.string().min(10).transform((v) => v.replace(/\D/g, '')),
   email: z.string().email().optional().or(z.literal('')),
   especialidade: z.string().optional(),
   urgencia: z.enum(['alta', 'media', 'baixa']).optional(),

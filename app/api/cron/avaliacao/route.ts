@@ -15,21 +15,18 @@ const GOOGLE_REVIEWS_URL = process.env.GOOGLE_REVIEWS_URL ?? 'https://g.page/r/C
 export async function GET() {
   const supabase = createAdminClient()
 
-  const ontem = new Date()
-  ontem.setDate(ontem.getDate() - 1)
-  ontem.setHours(0, 0, 0, 0)
+  const agora = new Date()
+  const h24atras = new Date(agora.getTime() - 24 * 60 * 60 * 1000)
+  const h48atras = new Date(agora.getTime() - 48 * 60 * 60 * 1000)
 
-  const anteontem = new Date(ontem)
-  anteontem.setDate(anteontem.getDate() - 1)
-
-  // Consultas realizadas ontem ou anteontem (janela de 24-48h)
+  // Consultas realizadas entre 24h e 48h atrás
   const { data: appointments, error } = await supabase
     .from('appointments')
     .select('id, lead_id, procedimento, data_hora, avaliacao_enviada, leads(nome, whatsapp)')
     .eq('status', 'realizado')
     .eq('avaliacao_enviada', false)
-    .gte('data_hora', anteontem.toISOString())
-    .lt('data_hora', ontem.toISOString())
+    .gte('data_hora', h48atras.toISOString())
+    .lt('data_hora', h24atras.toISOString())
 
   if (error) return apiError(error.message, 500)
 
