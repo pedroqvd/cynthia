@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react
 import Link from 'next/link'
 import { toast } from 'sonner'
 
-const OpenFinanceTabComponent = lazy(() => import('./OpenFinanceTab').then(m => ({ default: m.OpenFinanceTab })))
+const OpenFinanceTabComponent = lazy(() => import('./OpenFinanceTab'))
 function OpenFinanceTabLazy() {
   return (
     <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', fontSize: '.82rem', color: '#b8b4af' }}>Carregando...</div>}>
