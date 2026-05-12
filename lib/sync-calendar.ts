@@ -8,11 +8,16 @@ export async function syncCalendarToSupabase() {
   const events = await listEvents(60) // próximos 60 dias
 
   for (const event of events) {
-    const existing = await supabase
+    const { data: existingAppt, error: existingErr } = await supabase
       .from('appointments')
       .select('id')
       .eq('google_event_id', event.id)
       .maybeSingle()
+
+    if (existingErr) {
+      console.error('[sync-calendar] Erro ao buscar appointment:', existingErr)
+      continue
+    }
 
     const payload = {
       google_event_id: event.id,
@@ -23,11 +28,11 @@ export async function syncCalendarToSupabase() {
       status: 'agendado' as const,
     }
 
-    if (existing.data) {
+    if (existingAppt) {
       await supabase
         .from('appointments')
         .update({ data_hora: payload.data_hora, duracao_min: payload.duracao_min })
-        .eq('google_event_id', event.id)
+        .eq('id', existingAppt.id)
     } else {
       await supabase.from('appointments').insert(payload)
     }
