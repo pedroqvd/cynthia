@@ -50,6 +50,12 @@ export async function POST(req: NextRequest) {
     return apiError('Campos obrigatórios: lead_id, descricao, valor_total', 422)
   }
 
+  const totalNum = Number(valor_total)
+  const entradaNum = Number(valor_entrada ?? 0)
+  if (isNaN(totalNum) || totalNum <= 0) return apiError('valor_total deve ser positivo', 422)
+  if (entradaNum < 0) return apiError('valor_entrada não pode ser negativo', 422)
+  if (entradaNum > totalNum) return apiError('valor_entrada não pode ser maior que o valor total', 422)
+
   const { data, error } = await supabase
     .from('contratos')
     .insert({

@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Salva appointment
-  await supabase.from('appointments').insert({
+  const { error: apptError } = await supabase.from('appointments').insert({
     lead_id: leadId,
     google_event_id: googleEventId,
     procedimento: `Avaliação inicial${data.especialidade ? ` — ${data.especialidade}` : ''}`,
@@ -115,6 +115,11 @@ export async function POST(request: NextRequest) {
     duracao_min: duracao,
     status: 'agendado',
   })
+
+  if (apptError) {
+    console.error('[booking] Falha ao salvar appointment:', apptError)
+    return apiError('Erro ao registrar consulta. Tente novamente.', 500)
+  }
 
   const dataFormatada = dataDate.toLocaleString('pt-BR', {
     timeZone: 'America/Sao_Paulo',
