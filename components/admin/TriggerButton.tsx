@@ -11,18 +11,18 @@ export function TriggerButton({ endpoint }: { endpoint: string }) {
     setLoading(true)
     setDone(false)
     try {
-      const res = await fetch(endpoint, {
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET ?? ''}`,
-        },
+      const res = await fetch('/api/admin/run-cron', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint }),
       })
+      const data = await res.json().catch(() => ({}))
       if (res.ok) {
-        const data = await res.json()
-        toast.success(`Executado com sucesso. ${JSON.stringify(data)}`)
+        toast.success('Executado com sucesso.')
         setDone(true)
         setTimeout(() => setDone(false), 4000)
       } else {
-        toast.error(`Erro ${res.status}: ${res.statusText}`)
+        toast.error(data.error ?? `Erro ${res.status}`)
       }
     } catch {
       toast.error('Erro de conexão.')
