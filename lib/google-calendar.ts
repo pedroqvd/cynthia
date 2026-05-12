@@ -12,7 +12,12 @@ function getCalendarClient(): calendar_v3.Calendar {
   if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON não configurado')
 
   const serviceAccountJson = Buffer.from(raw, 'base64').toString('utf-8')
-  const credentials = JSON.parse(serviceAccountJson)
+  let credentials: Record<string, unknown>
+  try {
+    credentials = JSON.parse(serviceAccountJson)
+  } catch {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON contém JSON inválido')
+  }
 
   const auth = new google.auth.GoogleAuth({
     credentials,
@@ -22,7 +27,11 @@ function getCalendarClient(): calendar_v3.Calendar {
   return google.calendar({ version: 'v3', auth })
 }
 
-const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID!
+function getCalendarId(): string {
+  const id = process.env.GOOGLE_CALENDAR_ID
+  if (!id) throw new Error('GOOGLE_CALENDAR_ID não configurado')
+  return id
+}
 
 /** Tipo de evento retornado pela API */
 export interface CalendarEvent {
@@ -52,7 +61,7 @@ export async function listEvents(days = 30): Promise<CalendarEvent[]> {
   const future = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
 
   const res = await calendar.events.list({
-    calendarId: CALENDAR_ID,
+    calendarId: getCalendarId(),
     timeMin: now.toISOString(),
     timeMax: future.toISOString(),
     singleEvents: true,
@@ -96,7 +105,7 @@ export async function createEvent(params: {
   }
 
   const res = await calendar.events.insert({
-    calendarId: CALENDAR_ID,
+    calendarId: getCalendarId(),
     requestBody: event,
   })
 
@@ -122,7 +131,7 @@ export async function updateEvent(
   if (params.endIso) patch.end = { dateTime: params.endIso, timeZone: 'America/Sao_Paulo' }
 
   const res = await calendar.events.patch({
-    calendarId: CALENDAR_ID,
+    calendarId: getCalendarId(),
     eventId,
     requestBody: patch,
   })
@@ -133,7 +142,7 @@ export async function updateEvent(
 /** Cancela / exclui um evento */
 export async function deleteEvent(eventId: string): Promise<void> {
   const calendar = getCalendarClient()
-  await calendar.events.delete({ calendarId: CALENDAR_ID, eventId })
+  await calendar.events.delete({ calendarId: getCalendarId(), eventId })
 }
 
 /** Retorna horários disponíveis em um dia (em slots de 60 min) */
@@ -149,7 +158,7 @@ export async function getAvailability(date: string): Promise<string[]> {
   const endOfDay = new Date(`${date}T${String(CLOSE_HOUR).padStart(2, '0')}:00:00-03:00`)
 
   const res = await calendar.events.list({
-    calendarId: CALENDAR_ID,
+    calendarId: getCalendarId(),
     timeMin: startOfDay.toISOString(),
     timeMax: endOfDay.toISOString(),
     singleEvents: true,
@@ -185,7 +194,7 @@ export async function watchCalendar(webhookUrl: string): Promise<void> {
   const channelId = `cynthia-${Date.now()}`
 
   await calendar.events.watch({
-    calendarId: CALENDAR_ID,
+    calendarId: getCalendarId(),
     requestBody: {
       id: channelId,
       type: 'web_hook',

@@ -123,7 +123,8 @@ export async function validateWebhookSignature(
   body: string,
   signature: string
 ): Promise<boolean> {
-  const appSecret = process.env.WHATSAPP_APP_SECRET!
+  const appSecret = process.env.WHATSAPP_APP_SECRET
+  if (!appSecret) throw new Error('WHATSAPP_APP_SECRET não configurado')
   const encoder = new TextEncoder()
 
   const key = await crypto.subtle.importKey(
