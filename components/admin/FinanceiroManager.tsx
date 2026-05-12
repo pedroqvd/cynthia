@@ -819,13 +819,13 @@ function EntryModal({ entry, categories, contratos, leads, isAdmin, onClose, onS
   const [contratoId, setContratoId] = useState(entry?.contrato_id ?? '')
   const [parcelaNumero, setParcelaNumero] = useState(entry?.parcela_numero?.toString() ?? '')
   const [parcelasTotal, setParcelasTotal] = useState(entry?.parcelas_total?.toString() ?? '')
+  const [showVinculo, setShowVinculo] = useState(!!(entry?.leads?.id || entry?.contrato_id))
   const [loading, setLoading] = useState(false)
 
   const catsFiltradas = categories.filter((c) => c.tipo === tipo)
   const contratosDoLead = contratos.filter((c) => c.lead_id === leadId && c.status === 'ativo')
   const contratoSelecionado = contratos.find((c) => c.id === contratoId)
 
-  // Ao selecionar contrato, pré-preenche parcelas
   function onContratoChange(id: string) {
     setContratoId(id)
     const c = contratos.find((ct) => ct.id === id)
@@ -852,126 +852,264 @@ function EntryModal({ entry, categories, contratos, leads, isAdmin, onClose, onS
     setLoading(false)
   }
 
+  const isReceita = tipo === 'receita'
+  const accentColor = isReceita ? '#059669' : '#dc2626'
+  const accentBg = isReceita ? '#f0fdf4' : '#fef2f2'
+  const accentBorder = isReceita ? '#bbf7d0' : '#fecaca'
+
   return (
-    <ModalWrapper onClose={onClose}>
-      <h2 style={modalTitle}>{entry ? 'Editar lançamento' : 'Novo lançamento'}</h2>
-
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {/* Tipo */}
-        {isAdmin && (
-          <div style={{ display: 'flex', gap: '.5rem' }}>
-            {(['receita', 'despesa'] as const).map((t) => (
-              <button
-                key={t} type="button"
-                onClick={() => { setTipo(t); setCategoriaId('') }}
-                style={{
-                  flex: 1, padding: '.6rem', borderRadius: '2px', cursor: 'pointer', fontSize: '.82rem',
-                  fontWeight: tipo === t ? 500 : 400,
-                  border: `1px solid ${tipo === t ? (t === 'receita' ? '#10b981' : '#ef4444') : '#e5e5e3'}`,
-                  background: tipo === t ? (t === 'receita' ? '#d1fae5' : '#fee2e2') : 'transparent',
-                  color: tipo === t ? (t === 'receita' ? '#10b981' : '#ef4444') : '#7a7570',
-                }}
-              >
-                {t === 'receita' ? '↑ Receita' : '↓ Despesa'}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <Field label="Descrição *">
-          <input required value={descricao} onChange={(e) => setDescricao(e.target.value)}
-            placeholder="Ex: Facetas de porcelana — parcela 1" style={inputStyle} />
-        </Field>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <Field label="Valor (R$) *">
-            <input required type="number" min="0.01" step="0.01" value={valor}
-              onChange={(e) => setValor(e.target.value)} placeholder="0,00" style={inputStyle} />
-          </Field>
-          <Field label="Data *">
-            <input required type="date" value={data} onChange={(e) => setData(e.target.value)} style={inputStyle} />
-          </Field>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <Field label="Categoria">
-            <select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} style={inputStyle}>
-              <option value="">— Sem categoria —</option>
-              {catsFiltradas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-            </select>
-          </Field>
-          <Field label="Forma de pagamento">
-            <select value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)} style={inputStyle}>
-              <option value="">— Selecione —</option>
-              {FORMAS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
-          </Field>
-        </div>
-
-        {/* Vínculo com paciente */}
-        <Field label="Paciente">
-          <select value={leadId} onChange={(e) => { setLeadId(e.target.value); setContratoId('') }} style={inputStyle}>
-            <option value="">— Sem vínculo —</option>
-            {leads.map((l) => <option key={l.id} value={l.id}>{l.nome}{l.especialidade ? ` (${l.especialidade})` : ''}</option>)}
-          </select>
-        </Field>
-
-        {/* Vínculo com contrato */}
-        {leadId && (
-          <Field label="Contrato">
-            <select
-              data-modal-contrato-id
-              value={contratoId}
-              onChange={(e) => onContratoChange(e.target.value)}
-              style={inputStyle}
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(15,14,12,.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: '#fff', borderRadius: '12px', width: '100%', maxWidth: '560px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 24px 80px rgba(0,0,0,.18)', display: 'flex', flexDirection: 'column' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ── Header colorido por tipo ── */}
+        <div style={{ padding: '1.5rem 1.75rem 1.25rem', borderBottom: '1px solid #f0eeec' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.1rem' }}>
+            <h2 style={{ fontSize: '1rem', fontWeight: 600, color: '#0f0e0c', margin: 0 }}>
+              {entry ? 'Editar lançamento' : 'Novo lançamento'}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9a9590', fontSize: '1.2rem', lineHeight: 1, padding: '.25rem' }}
             >
-              <option value="">— Sem contrato —</option>
-              {contratosDoLead.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.descricao} ({fmt(Number(c.valor_total))})
-                </option>
-              ))}
-            </select>
-          </Field>
-        )}
+              ✕
+            </button>
+          </div>
 
-        {/* Parcela */}
-        {contratoId && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <Field label="Nº da parcela (0 = entrada)">
-              <input type="number" min="0" value={parcelaNumero}
-                onChange={(e) => setParcelaNumero(e.target.value)}
-                placeholder="Ex: 1" style={inputStyle} />
+          {/* Tipo toggle */}
+          {isAdmin ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.5rem' }}>
+              {(['receita', 'despesa'] as const).map((t) => {
+                const sel = tipo === t
+                const c = t === 'receita' ? '#059669' : '#dc2626'
+                const bg = t === 'receita' ? '#f0fdf4' : '#fef2f2'
+                const border = t === 'receita' ? '#bbf7d0' : '#fecaca'
+                return (
+                  <button
+                    key={t} type="button"
+                    onClick={() => { setTipo(t); setCategoriaId('') }}
+                    style={{
+                      padding: '.7rem 1rem',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '.85rem',
+                      fontWeight: sel ? 600 : 400,
+                      border: `1.5px solid ${sel ? border : '#e8e6e3'}`,
+                      background: sel ? bg : '#fafaf9',
+                      color: sel ? c : '#9a9590',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '.5rem',
+                      transition: 'all .15s',
+                    }}
+                  >
+                    <span style={{ fontSize: '1rem' }}>{t === 'receita' ? '↑' : '↓'}</span>
+                    {t === 'receita' ? 'Receita' : 'Despesa'}
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '.45rem .85rem' }}>
+              <span style={{ color: '#dc2626', fontSize: '.85rem', fontWeight: 500 }}>↓ Despesa</span>
+            </div>
+          )}
+        </div>
+
+        {/* ── Corpo do formulário ── */}
+        <form onSubmit={handleSubmit} style={{ padding: '1.5rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+
+          {/* Descrição */}
+          <Field label="Descrição *">
+            <input
+              required
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+              placeholder={isReceita ? 'Ex: Facetas de porcelana — parcela 1' : 'Ex: Aluguel do consultório'}
+              style={inputStyle}
+            />
+          </Field>
+
+          {/* Valor + Data */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.9rem' }}>
+            <Field label="Valor (R$) *">
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '.9rem', top: '50%', transform: 'translateY(-50%)', color: '#9a9590', fontSize: '.85rem', pointerEvents: 'none' }}>R$</span>
+                <input
+                  required
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={valor}
+                  onChange={(e) => setValor(e.target.value)}
+                  placeholder="0,00"
+                  style={{ ...inputStyle, paddingLeft: '2.4rem' }}
+                />
+              </div>
             </Field>
-            <Field label="Total de parcelas">
-              <input type="number" min="1" value={parcelasTotal}
-                onChange={(e) => setParcelasTotal(e.target.value)}
-                placeholder={contratoSelecionado?.parcelas.toString() ?? '1'} style={inputStyle} />
+            <Field label="Data *">
+              <input required type="date" value={data} onChange={(e) => setData(e.target.value)} style={{ ...inputStyle, colorScheme: 'light' }} />
             </Field>
           </div>
-        )}
 
-        <Field label="Status">
-          <select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} style={inputStyle}>
-            <option value="confirmado">Confirmado</option>
-            <option value="pendente">Pendente</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
-        </Field>
+          {/* Categoria + Forma de pagamento */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.9rem' }}>
+            <Field label="Categoria">
+              <select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} style={inputStyle}>
+                <option value="">Sem categoria</option>
+                {catsFiltradas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+              </select>
+            </Field>
+            <Field label="Forma de pagamento">
+              <select value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)} style={inputStyle}>
+                <option value="">Selecione...</option>
+                {FORMAS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </Field>
+          </div>
 
-        <Field label="Observações">
-          <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={2}
-            placeholder="Opcional..." style={{ ...inputStyle, resize: 'vertical' }} />
-        </Field>
+          {/* Status — pill buttons */}
+          <div>
+            <label style={fieldLabel}>Status</label>
+            <div style={{ display: 'flex', gap: '.4rem', marginTop: '.35rem' }}>
+              {([
+                { v: 'confirmado', label: 'Confirmado', color: '#059669', bg: '#f0fdf4', border: '#bbf7d0' },
+                { v: 'pendente', label: 'Pendente', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+                { v: 'cancelado', label: 'Cancelado', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
+              ] as const).map(({ v, label, color, bg, border }) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setStatus(v)}
+                  style={{
+                    padding: '.35rem .8rem',
+                    borderRadius: '20px',
+                    fontSize: '.75rem',
+                    fontWeight: status === v ? 600 : 400,
+                    border: `1px solid ${status === v ? border : '#e8e6e3'}`,
+                    background: status === v ? bg : 'transparent',
+                    color: status === v ? color : '#9a9590',
+                    cursor: 'pointer',
+                    transition: 'all .12s',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <div style={{ display: 'flex', gap: '.75rem', marginTop: '.5rem' }}>
-          <button type="button" onClick={onClose} style={btnCancelStyle}>Cancelar</button>
-          <button type="submit" disabled={loading} style={btnPrimStyle}>
-            {loading ? 'Salvando...' : entry ? 'Salvar alterações' : 'Criar lançamento'}
-          </button>
-        </div>
-      </form>
-    </ModalWrapper>
+          {/* Observações */}
+          <Field label="Observações">
+            <textarea
+              value={notas}
+              onChange={(e) => setNotas(e.target.value)}
+              rows={2}
+              placeholder="Notas internas, condições especiais..."
+              style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
+            />
+          </Field>
+
+          {/* Vínculo com paciente/contrato — seção expansível */}
+          <div style={{ borderTop: '1px solid #f0eeec', paddingTop: '1rem' }}>
+            <button
+              type="button"
+              onClick={() => setShowVinculo((v) => !v)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.78rem', color: '#7a7570', padding: 0 }}
+            >
+              <span style={{ transition: 'transform .15s', display: 'inline-block', transform: showVinculo ? 'rotate(90deg)' : 'none' }}>▶</span>
+              Vincular a paciente / contrato
+              {(leadId || contratoId) && (
+                <span style={{ marginLeft: '.25rem', fontSize: '.68rem', background: accentBg, color: accentColor, border: `1px solid ${accentBorder}`, borderRadius: '10px', padding: '.1rem .5rem' }}>
+                  vinculado
+                </span>
+              )}
+            </button>
+
+            {showVinculo && (
+              <div style={{ marginTop: '.85rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                <Field label="Paciente">
+                  <select value={leadId} onChange={(e) => { setLeadId(e.target.value); setContratoId('') }} style={inputStyle}>
+                    <option value="">— Sem vínculo —</option>
+                    {leads.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.nome}{l.especialidade ? ` · ${l.especialidade}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                {leadId && (
+                  <Field label="Contrato">
+                    <select
+                      data-modal-contrato-id
+                      value={contratoId}
+                      onChange={(e) => onContratoChange(e.target.value)}
+                      style={inputStyle}
+                    >
+                      <option value="">— Sem contrato —</option>
+                      {contratosDoLead.length === 0 && <option disabled>Nenhum contrato ativo</option>}
+                      {contratosDoLead.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.descricao} ({fmt(Number(c.valor_total))})
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
+
+                {contratoId && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.9rem' }}>
+                    <Field label="Nº da parcela">
+                      <input
+                        type="number"
+                        min="0"
+                        value={parcelaNumero}
+                        onChange={(e) => setParcelaNumero(e.target.value)}
+                        placeholder="1  (0 = entrada)"
+                        style={inputStyle}
+                      />
+                    </Field>
+                    <Field label="Total de parcelas">
+                      <input
+                        type="number"
+                        min="1"
+                        value={parcelasTotal}
+                        onChange={(e) => setParcelasTotal(e.target.value)}
+                        placeholder={contratoSelecionado?.parcelas.toString() ?? '1'}
+                        style={inputStyle}
+                      />
+                    </Field>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Rodapé com ações */}
+          <div style={{ display: 'flex', gap: '.75rem', paddingTop: '.25rem' }}>
+            <button type="button" onClick={onClose} style={btnCancelStyle}>Cancelar</button>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                ...btnPrimStyle,
+                background: loading ? '#555' : accentColor,
+                opacity: loading ? .7 : 1,
+              }}
+            >
+              {loading ? 'Salvando...' : entry ? 'Salvar alterações' : `Registrar ${isReceita ? 'receita' : 'despesa'}`}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   )
 }
 
@@ -1167,6 +1305,10 @@ const inputStyle: React.CSSProperties = {
   width: '100%', border: '1px solid #e5e5e3', borderRadius: '6px',
   padding: '.65rem .9rem', fontSize: '.85rem', outline: 'none',
   background: '#fff', color: '#0f0e0c', boxSizing: 'border-box',
+}
+
+const fieldLabel: React.CSSProperties = {
+  fontSize: '.7rem', letterSpacing: '.08em', textTransform: 'uppercase', color: '#7a7570', display: 'block', marginBottom: '.35rem',
 }
 
 const cardStyle: React.CSSProperties = {
